@@ -95,3 +95,51 @@ export function playApplause(volume = 0.5) {
   src.connect(g);
   src.start();
 }
+
+/* --------- Custom music (user-uploaded) --------- */
+let musicEl: HTMLAudioElement | null = null;
+
+export function playCustomMusic(url: string, volume = 0.6, loop = false) {
+  stopCustomMusic();
+  try {
+    musicEl = new Audio(url);
+    musicEl.volume = Math.max(0, Math.min(1, volume));
+    musicEl.loop = loop;
+    void musicEl.play().catch(() => {});
+  } catch {
+    /* ignore */
+  }
+}
+
+export function stopCustomMusic() {
+  if (musicEl) {
+    try {
+      musicEl.pause();
+      musicEl.currentTime = 0;
+    } catch {
+      /* ignore */
+    }
+    musicEl = null;
+  }
+}
+
+export function fadeOutCustomMusic(ms = 600) {
+  if (!musicEl) return;
+  const el = musicEl;
+  const start = el.volume;
+  const steps = 12;
+  let i = 0;
+  const iv = window.setInterval(() => {
+    i++;
+    el.volume = Math.max(0, start * (1 - i / steps));
+    if (i >= steps) {
+      clearInterval(iv);
+      try {
+        el.pause();
+      } catch {
+        /* ignore */
+      }
+      if (musicEl === el) musicEl = null;
+    }
+  }, ms / steps);
+}
