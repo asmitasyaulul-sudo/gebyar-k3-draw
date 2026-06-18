@@ -35,7 +35,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import {
-  Download,
   Image as ImageIcon,
   LogOut,
   Pencil,
