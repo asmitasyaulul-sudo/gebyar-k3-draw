@@ -361,11 +361,27 @@ function ParticipantsTab({
   const filtered = participants.filter(
     (p) =>
       !q ||
-      p.name.toLowerCase().includes(q.toLowerCase()) ||
+      (p.name || "").toLowerCase().includes(q.toLowerCase()) ||
       p.number.toLowerCase().includes(q.toLowerCase()) ||
-      p.department.toLowerCase().includes(q.toLowerCase()),
+      (p.department || "").toLowerCase().includes(q.toLowerCase()),
   );
   filtered.sort((a, b) => a.number.localeCompare(b.number, undefined, { numeric: true }));
+
+  const handleBulkGenerate = () => {
+    const n = Math.max(0, Math.min(10000, parseInt(bulkN, 10) || 0));
+    if (!n) return toast.error("Enter how many numbers to generate.");
+    const start = parseInt(bulkStart, 10) || 1;
+    const pad = Math.max(0, Math.min(8, parseInt(bulkPad, 10) || 0));
+    const list: Participant[] = Array.from({ length: n }, (_, i) => ({
+      id: crypto.randomUUID(),
+      number: pad > 0 ? String(start + i).padStart(pad, "0") : String(start + i),
+      name: "",
+      department: "",
+    }));
+    setParticipants(list);
+    setBulkN("");
+    toast.success(`Generated ${n} numbered tickets.`);
+  };
 
   return (
     <div className="space-y-3">
