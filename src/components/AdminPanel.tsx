@@ -322,6 +322,9 @@ function ParticipantsTab({
   const fileRef = useRef<HTMLInputElement>(null);
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState<Participant | null>(null);
+  const [bulkN, setBulkN] = useState("");
+  const [bulkStart, setBulkStart] = useState("1");
+  const [bulkPad, setBulkPad] = useState("3");
 
   const handleFile = async (f: File) => {
     const buf = await f.arrayBuffer();
@@ -344,7 +347,7 @@ function ParticipantsTab({
           photoUrl: photoUrl || undefined,
         };
       })
-      .filter((p) => p.name);
+      .filter((p) => p.name || p.number);
     setParticipants(list);
     toast.success(`Imported ${list.length} participants.`);
   };
