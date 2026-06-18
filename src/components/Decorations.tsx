@@ -6,12 +6,22 @@ const SPEED_MAP = { slow: 1.7, normal: 1, fast: 0.55 } as const;
 export function Decorations() {
   const { settings } = useApp();
   const o = settings.ornaments;
-  const k = SPEED_MAP[settings.animSpeed];
+  const reduced = settings.reducedMotion;
+  // Higher multiplier = faster animation = shorter duration.
+  const userMult = Math.max(0.25, settings.animSpeedMultiplier || 1);
+  // In reduced motion, slow everything down significantly.
+  const reduceFactor = reduced ? 2.5 : 1;
+  const k = (SPEED_MAP[settings.animSpeed] / userMult) * reduceFactor;
+
+  // In reduced motion mode, suppress the flashiest / most distracting ornaments.
+  const showStageLights = o.stageLights && !reduced;
+  const showSparkles = o.sparkles && !reduced;
+  const showParticles = o.particles && !reduced;
 
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden">
       {/* Stage lights */}
-      {o.stageLights && (
+      {showStageLights && (
         <>
           <div
             className="absolute -top-20 left-[12%] h-[60vh] w-[14vw] origin-top rotate-[18deg] anim-stage rounded-b-full"
@@ -99,7 +109,7 @@ export function Decorations() {
       )}
 
       {/* Sparkles */}
-      {o.sparkles && (
+      {showSparkles && (
         <>
           {[
             "left-[15%] top-[30%]",
@@ -122,7 +132,7 @@ export function Decorations() {
       )}
 
       {/* Particles */}
-      {o.particles && (
+      {showParticles && (
         <>
           {Array.from({ length: 24 }).map((_, i) => (
             <span

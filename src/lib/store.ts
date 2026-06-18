@@ -106,6 +106,8 @@ const defaultSettings: Settings = {
   winnersPerRound: 5,
   displayMode: "number_name_dept",
   animSpeed: "normal",
+  animSpeedMultiplier: 1,
+  reducedMotion: false,
   ornaments: {
     gears: true,
     helmets: true,
