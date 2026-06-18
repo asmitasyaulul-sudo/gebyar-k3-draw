@@ -136,7 +136,7 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
               </Select>
               <div className="mt-3">
                 <Label className="text-xs text-muted-foreground">
-                  Speed multiplier ({settings.animSpeedMultiplier.toFixed(2)}×)
+                  Speed multiplier ({(settings.animSpeedMultiplier ?? 1).toFixed(2)}×)
                 </Label>
                 <Slider
                   className="mt-2"
