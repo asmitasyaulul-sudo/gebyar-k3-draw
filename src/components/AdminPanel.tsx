@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import {
   DISPLAY_MODES,
+  DRAW_STYLES,
   PRESET_BACKGROUNDS,
   WINNERS_OPTIONS,
   hashPw,
@@ -37,10 +38,13 @@ import { toast } from "sonner";
 import {
   Image as ImageIcon,
   LogOut,
+  Music,
   Pencil,
   Plus,
+  Sparkles as SparklesIcon,
   Trash2,
   Upload,
+  X,
 } from "lucide-react";
 
 export function AdminPanel({ onClose }: { onClose: () => void }) {
