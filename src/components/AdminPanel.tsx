@@ -584,7 +584,7 @@ function EditParticipant({
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={() => p.name && onSave(p)}>Save</AlertDialogAction>
+          <AlertDialogAction onClick={() => (p.number || p.name) && onSave(p)}>Save</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
