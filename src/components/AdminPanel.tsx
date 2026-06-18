@@ -417,6 +417,60 @@ function ParticipantsTab({
         />
       </div>
 
+      {/* Bulk generate number-only tickets */}
+      <div className="rounded-lg border bg-secondary/40 p-3">
+        <div className="mb-2 font-display text-xs uppercase tracking-widest text-muted-foreground">
+          Quick generate numbered tickets
+        </div>
+        <form
+          className="flex flex-wrap items-end gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleBulkGenerate();
+          }}
+        >
+          <div>
+            <Label className="text-xs">How many</Label>
+            <Input
+              type="number"
+              min={1}
+              max={10000}
+              inputMode="numeric"
+              placeholder="e.g. 200"
+              value={bulkN}
+              onChange={(e) => setBulkN(e.target.value)}
+              className="mt-1 w-32"
+            />
+          </div>
+          <div>
+            <Label className="text-xs">Start at</Label>
+            <Input
+              type="number"
+              value={bulkStart}
+              onChange={(e) => setBulkStart(e.target.value)}
+              className="mt-1 w-24"
+            />
+          </div>
+          <div>
+            <Label className="text-xs">Pad zeros</Label>
+            <Input
+              type="number"
+              min={0}
+              max={8}
+              value={bulkPad}
+              onChange={(e) => setBulkPad(e.target.value)}
+              className="mt-1 w-20"
+            />
+          </div>
+          <Button type="submit" className="h-9">
+            Generate (replaces list)
+          </Button>
+          <span className="text-xs text-muted-foreground">
+            Enter a count and press Enter — creates that many numbered tickets, no names needed.
+          </span>
+        </form>
+      </div>
+
       <div className="max-h-[55vh] overflow-auto rounded-lg border">
         <table className="w-full text-sm">
           <thead className="sticky top-0 bg-secondary text-left">
@@ -432,7 +486,7 @@ function ParticipantsTab({
             {filtered.map((p) => (
               <tr key={p.id} className="border-t">
                 <td className="p-2 font-display">{p.number}</td>
-                <td className="p-2">{p.name}</td>
+                <td className="p-2">{p.name || <span className="text-muted-foreground/60">—</span>}</td>
                 <td className="p-2 text-muted-foreground">{p.department}</td>
                 <td className="p-2">
                   <label className="inline-flex cursor-pointer items-center gap-2">
