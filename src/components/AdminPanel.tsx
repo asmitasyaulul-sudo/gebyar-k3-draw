@@ -155,7 +155,7 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
                   onCheckedChange={(v) => setSettings({ reducedMotion: v })}
                 />
                 <span className="text-sm text-muted-foreground">
-                  Reduced motion (limits confetti, flashes, particles)
+                  Reduced motion — press M on the main screen to toggle (limits confetti, flashes, particles)
                 </span>
               </div>
             </div>
