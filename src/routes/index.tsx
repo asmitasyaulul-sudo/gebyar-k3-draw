@@ -20,9 +20,11 @@ import {
 } from "lucide-react";
 import {
   PRESET_BACKGROUNDS,
+  DISPLAY_MODES,
   hashPw,
   useApp,
   type Participant,
+  type DisplayMode,
 } from "@/lib/store";
 import { Decorations } from "@/components/Decorations";
 import { LotteryMachine } from "@/components/LotteryMachine";
