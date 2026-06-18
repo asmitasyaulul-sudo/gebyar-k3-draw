@@ -346,26 +346,88 @@ function Index() {
       </div>
 
       {/* Controls */}
-      <div className="relative z-10 mx-auto mt-6 flex max-w-3xl flex-wrap items-center justify-center gap-3 px-4">
-        <Button
-          size="lg"
-          onClick={handleDraw}
-          disabled={spinning || !pool.length}
-          className="h-14 min-w-44 bg-gradient-to-r from-safety-orange via-safety-yellow to-safety-orange font-display text-lg tracking-widest text-slate-900 shadow-[0_10px_40px_-10px_rgba(255,193,7,0.8)] hover:brightness-110"
-        >
-          <Play className="mr-2 h-5 w-5" />
-          {spinning ? "DRAWING…" : latest.length ? "NEXT DRAW" : "START DRAW"}
-        </Button>
+      <div className="relative z-10 mx-auto mt-6 flex max-w-5xl flex-col items-center justify-center gap-4 px-4">
+        {/* Quick draw config */}
+        <div className="flex flex-wrap items-center justify-center gap-3 rounded-2xl border border-white/15 bg-black/30 px-4 py-3 backdrop-blur">
+          <div className="flex items-center gap-2">
+            <Label className="font-display text-[11px] uppercase tracking-[0.25em] text-safety-yellow">
+              Winners / spin
+            </Label>
+            <div className="flex items-center gap-1">
+              {[1, 3, 5, 10, 20].map((n) => (
+                <Button
+                  key={n}
+                  type="button"
+                  size="sm"
+                  variant={settings.winnersPerRound === n ? "default" : "secondary"}
+                  onClick={() => setSettings({ winnersPerRound: n })}
+                  disabled={spinning}
+                  className="h-8 min-w-9 px-2"
+                >
+                  {n}
+                </Button>
+              ))}
+              <Input
+                type="number"
+                min={1}
+                max={Math.max(1, pool.length || 1)}
+                value={settings.winnersPerRound}
+                onChange={(e) => {
+                  const v = Math.max(1, Math.min(500, Number(e.target.value) || 1));
+                  setSettings({ winnersPerRound: v });
+                }}
+                disabled={spinning}
+                className="h-8 w-20"
+              />
+            </div>
+          </div>
 
-        <ConfirmBtn
-          title="Reset current round?"
-          desc="The latest round's winners will be returned to the pool."
-          onConfirm={handleResetRound}
-        >
-          <Button size="lg" variant="secondary" disabled={!winners.length || spinning}>
-            <RotateCcw className="mr-2 h-4 w-4" /> Reset Round
+          <div className="hidden h-6 w-px bg-white/20 sm:block" />
+
+          <div className="flex items-center gap-2">
+            <Label className="font-display text-[11px] uppercase tracking-[0.25em] text-safety-yellow">
+              Display
+            </Label>
+            <select
+              value={settings.displayMode}
+              onChange={(e) =>
+                setSettings({ displayMode: e.target.value as DisplayMode })
+              }
+              disabled={spinning}
+              className="h-8 rounded-md border border-white/20 bg-black/40 px-2 text-xs text-white focus:outline-none focus:ring-1 focus:ring-safety-yellow"
+            >
+              {DISPLAY_MODES.map((d) => (
+                <option key={d.value} value={d.value} className="bg-slate-900">
+                  {d.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-center gap-3">
+          <Button
+            size="lg"
+            onClick={handleDraw}
+            disabled={spinning || !pool.length}
+            className="h-14 min-w-44 bg-gradient-to-r from-safety-orange via-safety-yellow to-safety-orange font-display text-lg tracking-widest text-slate-900 shadow-[0_10px_40px_-10px_rgba(255,193,7,0.8)] hover:brightness-110"
+          >
+            <Play className="mr-2 h-5 w-5" />
+            {spinning
+              ? "DRAWING…"
+              : `${latest.length ? "NEXT DRAW" : "START DRAW"} · ${Math.min(settings.winnersPerRound, pool.length || settings.winnersPerRound)}`}
           </Button>
-        </ConfirmBtn>
+
+          <ConfirmBtn
+            title="Reset current round?"
+            desc="The latest round's winners will be returned to the pool."
+            onConfirm={handleResetRound}
+          >
+            <Button size="lg" variant="secondary" disabled={!winners.length || spinning}>
+              <RotateCcw className="mr-2 h-4 w-4" /> Reset Round
+            </Button>
+          </ConfirmBtn>
+        </div>
       </div>
 
       {/* Winners */}
