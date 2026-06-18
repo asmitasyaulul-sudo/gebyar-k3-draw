@@ -24,6 +24,7 @@ export type DisplayMode =
 
 export type AnimSpeed = "slow" | "normal" | "fast";
 export type LogoSize = "sm" | "md" | "lg" | "xl";
+export type DrawStyle = "machine" | "wheel" | "balls";
 
 export type Ornaments = {
   gears: boolean;
@@ -37,15 +38,25 @@ export type Ornaments = {
   confetti: boolean;
 };
 
+export type CustomIcon = {
+  id: string;
+  url: string; // data URL
+  // position as percentage of screen (0-100)
+  x: number;
+  y: number;
+  size: number; // px
+  float: boolean; // animate floating
+};
+
 export type Settings = {
   // Theme
   dark: boolean;
   // Background
-  bgIndex: number; // index into preset list, -1 means custom
-  bgCustom?: string; // data URL
-  bgBrightness: number; // 0.2 - 1.2
-  bgBlur: number; // 0 - 20
-  overlayOpacity: number; // 0 - 0.85
+  bgIndex: number;
+  bgCustom?: string;
+  bgBrightness: number;
+  bgBlur: number;
+  overlayOpacity: number;
   // Logos
   companyLogo?: string;
   eventLogo?: string;
@@ -53,16 +64,21 @@ export type Settings = {
   // Draw
   winnersPerRound: number;
   displayMode: DisplayMode;
+  drawStyle: DrawStyle;
   // Ornaments
   animSpeed: AnimSpeed;
-  animSpeedMultiplier: number; // 0.5 (slower) - 2 (faster); 1 = normal
+  animSpeedMultiplier: number;
   reducedMotion: boolean;
   ornaments: Ornaments;
+  // Custom flying icons
+  customIcons: CustomIcon[];
   // Sound
   volume: number;
   muted: boolean;
+  customMusic?: string; // data URL
+  customMusicName?: string;
   // Admin
-  adminPasswordHash: string; // simple hash
+  adminPasswordHash: string;
 };
 
 export type AppState = {
@@ -85,11 +101,14 @@ export type AppState = {
   setSettings: (patch: Partial<Settings>) => void;
   setOrnament: (key: keyof Ornaments, v: boolean) => void;
 
+  addCustomIcon: (i: CustomIcon) => void;
+  updateCustomIcon: (id: string, patch: Partial<CustomIcon>) => void;
+  removeCustomIcon: (id: string) => void;
+
   setAdmin: (v: boolean) => void;
   setPresentation: (v: boolean) => void;
 };
 
-// Tiny non-secure hash; just to avoid storing plaintext.
 export function hashPw(s: string): string {
   let h = 5381;
   for (let i = 0; i < s.length; i++) h = ((h << 5) + h) ^ s.charCodeAt(i);
@@ -105,6 +124,7 @@ const defaultSettings: Settings = {
   logoSize: "lg",
   winnersPerRound: 5,
   displayMode: "number_name_dept",
+  drawStyle: "machine",
   animSpeed: "normal",
   animSpeedMultiplier: 1,
   reducedMotion: false,
@@ -119,6 +139,7 @@ const defaultSettings: Settings = {
     stageLights: true,
     confetti: true,
   },
+  customIcons: [],
   volume: 0.7,
   muted: false,
   adminPasswordHash: hashPw("admin123"),
@@ -174,12 +195,33 @@ export const useApp = create<AppState>()(
           },
         })),
 
+      addCustomIcon: (i) =>
+        set((s) => ({
+          settings: { ...s.settings, customIcons: [...s.settings.customIcons, i] },
+        })),
+      updateCustomIcon: (id, patch) =>
+        set((s) => ({
+          settings: {
+            ...s.settings,
+            customIcons: s.settings.customIcons.map((x) =>
+              x.id === id ? { ...x, ...patch } : x,
+            ),
+          },
+        })),
+      removeCustomIcon: (id) =>
+        set((s) => ({
+          settings: {
+            ...s.settings,
+            customIcons: s.settings.customIcons.filter((x) => x.id !== id),
+          },
+        })),
+
       setAdmin: (v) => set({ isAdmin: v }),
       setPresentation: (v) => set({ presentation: v }),
     }),
     {
       name: "gebyar-k3-store",
-      version: 1,
+      version: 2,
       migrate: (persistedState: any) => {
         const base =
           typeof persistedState === "object" && persistedState !== null
@@ -195,6 +237,9 @@ export const useApp = create<AppState>()(
               ...defaultSettings.ornaments,
               ...(persistedSettings.ornaments ?? {}),
             },
+            customIcons: Array.isArray(persistedSettings.customIcons)
+              ? persistedSettings.customIcons
+              : [],
           },
         };
       },
@@ -237,6 +282,12 @@ export const DISPLAY_MODES: { value: DisplayMode; label: string }[] = [
   { value: "number_name", label: "Number + Name" },
   { value: "number_name_dept", label: "Number + Name + Department" },
   { value: "number_name_photo", label: "Number + Name + Photo" },
+];
+
+export const DRAW_STYLES: { value: DrawStyle; label: string; desc: string }[] = [
+  { value: "machine", label: "Industrial Reels", desc: "Classic slot-style lottery machine" },
+  { value: "wheel", label: "Spinning Wheel", desc: "Circular roulette-style wheel" },
+  { value: "balls", label: "Bingo Balls", desc: "Bouncing numbered balls" },
 ];
 
 export const WINNERS_OPTIONS = [1, 5, 10, 15, 20];

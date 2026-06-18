@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import * as XLSX from "xlsx";
 import {
   DISPLAY_MODES,
+  DRAW_STYLES,
   PRESET_BACKGROUNDS,
   WINNERS_OPTIONS,
   hashPw,
@@ -37,10 +38,13 @@ import { toast } from "sonner";
 import {
   Image as ImageIcon,
   LogOut,
+  Music,
   Pencil,
   Plus,
+  Sparkles as SparklesIcon,
   Trash2,
   Upload,
+  X,
 } from "lucide-react";
 
 export function AdminPanel({ onClose }: { onClose: () => void }) {
@@ -61,10 +65,11 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
   return (
     <div className="space-y-4">
       <Tabs defaultValue="participants" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="participants">Participants</TabsTrigger>
           <TabsTrigger value="draw">Draw</TabsTrigger>
           <TabsTrigger value="visuals">Visuals</TabsTrigger>
+          <TabsTrigger value="media">Media</TabsTrigger>
           <TabsTrigger value="ornaments">Ornaments</TabsTrigger>
           <TabsTrigger value="account">Account</TabsTrigger>
         </TabsList>
@@ -80,6 +85,26 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
         </TabsContent>
 
         <TabsContent value="draw" className="mt-4 space-y-4">
+          <div>
+            <Label className="mb-2 block">Draw animation style</Label>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {DRAW_STYLES.map((s) => (
+                <button
+                  key={s.value}
+                  type="button"
+                  onClick={() => setSettings({ drawStyle: s.value })}
+                  className={`rounded-lg border-2 p-3 text-left transition ${
+                    settings.drawStyle === s.value
+                      ? "border-safety-yellow glow-gold bg-secondary"
+                      : "border-border hover:border-primary"
+                  }`}
+                >
+                  <div className="font-display text-sm">{s.label}</div>
+                  <div className="mt-0.5 text-xs text-muted-foreground">{s.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label>Winners per round</Label>
@@ -201,6 +226,10 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
           <VisualsTab />
         </TabsContent>
 
+        <TabsContent value="media" className="mt-4">
+          <MediaTab />
+        </TabsContent>
+
         <TabsContent value="ornaments" className="mt-4 space-y-2">
           {(
             [
@@ -293,6 +322,9 @@ function ParticipantsTab({
   const fileRef = useRef<HTMLInputElement>(null);
   const [q, setQ] = useState("");
   const [editing, setEditing] = useState<Participant | null>(null);
+  const [bulkN, setBulkN] = useState("");
+  const [bulkStart, setBulkStart] = useState("1");
+  const [bulkPad, setBulkPad] = useState("3");
 
   const handleFile = async (f: File) => {
     const buf = await f.arrayBuffer();
@@ -315,7 +347,7 @@ function ParticipantsTab({
           photoUrl: photoUrl || undefined,
         };
       })
-      .filter((p) => p.name);
+      .filter((p) => p.name || p.number);
     setParticipants(list);
     toast.success(`Imported ${list.length} participants.`);
   };
@@ -329,11 +361,27 @@ function ParticipantsTab({
   const filtered = participants.filter(
     (p) =>
       !q ||
-      p.name.toLowerCase().includes(q.toLowerCase()) ||
+      (p.name || "").toLowerCase().includes(q.toLowerCase()) ||
       p.number.toLowerCase().includes(q.toLowerCase()) ||
-      p.department.toLowerCase().includes(q.toLowerCase()),
+      (p.department || "").toLowerCase().includes(q.toLowerCase()),
   );
   filtered.sort((a, b) => a.number.localeCompare(b.number, undefined, { numeric: true }));
+
+  const handleBulkGenerate = () => {
+    const n = Math.max(0, Math.min(10000, parseInt(bulkN, 10) || 0));
+    if (!n) return toast.error("Enter how many numbers to generate.");
+    const start = parseInt(bulkStart, 10) || 1;
+    const pad = Math.max(0, Math.min(8, parseInt(bulkPad, 10) || 0));
+    const list: Participant[] = Array.from({ length: n }, (_, i) => ({
+      id: crypto.randomUUID(),
+      number: pad > 0 ? String(start + i).padStart(pad, "0") : String(start + i),
+      name: "",
+      department: "",
+    }));
+    setParticipants(list);
+    setBulkN("");
+    toast.success(`Generated ${n} numbered tickets.`);
+  };
 
   return (
     <div className="space-y-3">
@@ -369,6 +417,60 @@ function ParticipantsTab({
         />
       </div>
 
+      {/* Bulk generate number-only tickets */}
+      <div className="rounded-lg border bg-secondary/40 p-3">
+        <div className="mb-2 font-display text-xs uppercase tracking-widest text-muted-foreground">
+          Quick generate numbered tickets
+        </div>
+        <form
+          className="flex flex-wrap items-end gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleBulkGenerate();
+          }}
+        >
+          <div>
+            <Label className="text-xs">How many</Label>
+            <Input
+              type="number"
+              min={1}
+              max={10000}
+              inputMode="numeric"
+              placeholder="e.g. 200"
+              value={bulkN}
+              onChange={(e) => setBulkN(e.target.value)}
+              className="mt-1 w-32"
+            />
+          </div>
+          <div>
+            <Label className="text-xs">Start at</Label>
+            <Input
+              type="number"
+              value={bulkStart}
+              onChange={(e) => setBulkStart(e.target.value)}
+              className="mt-1 w-24"
+            />
+          </div>
+          <div>
+            <Label className="text-xs">Pad zeros</Label>
+            <Input
+              type="number"
+              min={0}
+              max={8}
+              value={bulkPad}
+              onChange={(e) => setBulkPad(e.target.value)}
+              className="mt-1 w-20"
+            />
+          </div>
+          <Button type="submit" className="h-9">
+            Generate (replaces list)
+          </Button>
+          <span className="text-xs text-muted-foreground">
+            Enter a count and press Enter — creates that many numbered tickets, no names needed.
+          </span>
+        </form>
+      </div>
+
       <div className="max-h-[55vh] overflow-auto rounded-lg border">
         <table className="w-full text-sm">
           <thead className="sticky top-0 bg-secondary text-left">
@@ -384,7 +486,7 @@ function ParticipantsTab({
             {filtered.map((p) => (
               <tr key={p.id} className="border-t">
                 <td className="p-2 font-display">{p.number}</td>
-                <td className="p-2">{p.name}</td>
+                <td className="p-2">{p.name || <span className="text-muted-foreground/60">—</span>}</td>
                 <td className="p-2 text-muted-foreground">{p.department}</td>
                 <td className="p-2">
                   <label className="inline-flex cursor-pointer items-center gap-2">
@@ -482,7 +584,7 @@ function EditParticipant({
         </div>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={() => p.name && onSave(p)}>Save</AlertDialogAction>
+          <AlertDialogAction onClick={() => (p.number || p.name) && onSave(p)}>Save</AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -727,6 +829,148 @@ function ChangePassword() {
     </div>
   );
 }
+
+/* --------------------- Media Tab (music + custom flying icons) --------------------- */
+
+function MediaTab() {
+  const { settings, setSettings, addCustomIcon, removeCustomIcon, updateCustomIcon } = useApp();
+  const musicRef = useRef<HTMLInputElement>(null);
+  const iconRef = useRef<HTMLInputElement>(null);
+
+  const handleMusic = (f: File) => {
+    const r = new FileReader();
+    r.onload = () => {
+      setSettings({ customMusic: r.result as string, customMusicName: f.name });
+      toast.success(`Music set: ${f.name}`);
+    };
+    r.readAsDataURL(f);
+  };
+
+  const handleIcon = (files: FileList) => {
+    Array.from(files).forEach((f, i) => {
+      const r = new FileReader();
+      r.onload = () => {
+        addCustomIcon({
+          id: crypto.randomUUID(),
+          url: r.result as string,
+          x: 20 + ((i * 17) % 60),
+          y: 30 + ((i * 23) % 40),
+          size: 96,
+          float: true,
+        });
+      };
+      r.readAsDataURL(f);
+    });
+    toast.success(`Added ${files.length} icon(s). Drag them on the main screen.`);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Music */}
+      <div className="rounded-lg border p-4">
+        <div className="mb-2 flex items-center gap-2 font-display text-sm">
+          <Music className="h-4 w-4" /> Custom draw music
+        </div>
+        <p className="mb-3 text-xs text-muted-foreground">
+          Upload an MP3/WAV/OGG file. It will replace the built-in spin sound during a draw, and fades out when the winner is revealed.
+        </p>
+        <input
+          ref={musicRef}
+          type="file"
+          accept="audio/*"
+          className="hidden"
+          onChange={(e) => e.target.files?.[0] && handleMusic(e.target.files[0])}
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button onClick={() => musicRef.current?.click()}>
+            <Upload className="mr-2 h-4 w-4" /> Upload music
+          </Button>
+          {settings.customMusic && (
+            <>
+              <audio src={settings.customMusic} controls className="h-9 max-w-xs" />
+              <span className="text-xs text-muted-foreground">
+                {settings.customMusicName || "uploaded.mp3"}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  setSettings({ customMusic: undefined, customMusicName: undefined })
+                }
+              >
+                <X className="mr-1 h-3 w-3" /> Remove
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Custom flying icons */}
+      <div className="rounded-lg border p-4">
+        <div className="mb-2 flex items-center gap-2 font-display text-sm">
+          <SparklesIcon className="h-4 w-4" /> Custom flying icons
+        </div>
+        <p className="mb-3 text-xs text-muted-foreground">
+          Upload PNG/SVG/JPG images to float on the stage. While logged in, drag them on the main screen to reposition. Use the floating toolbar on each icon to resize, toggle motion, or remove.
+        </p>
+        <input
+          ref={iconRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => e.target.files && handleIcon(e.target.files)}
+        />
+        <Button onClick={() => iconRef.current?.click()}>
+          <Plus className="mr-2 h-4 w-4" /> Upload icons
+        </Button>
+
+        {!!settings.customIcons.length && (
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {settings.customIcons.map((ic) => (
+              <div
+                key={ic.id}
+                className="relative flex flex-col items-center gap-2 rounded-lg border bg-secondary/40 p-2"
+              >
+                <img src={ic.url} className="h-16 w-16 object-contain" alt="" />
+                <div className="w-full">
+                  <Label className="text-[10px] text-muted-foreground">
+                    Size {ic.size}px
+                  </Label>
+                  <Slider
+                    className="mt-1"
+                    min={32}
+                    max={240}
+                    value={[ic.size]}
+                    onValueChange={(v) => updateCustomIcon(ic.id, { size: v[0] })}
+                  />
+                </div>
+                <div className="flex w-full items-center justify-between text-xs">
+                  <label className="flex items-center gap-1">
+                    <Switch
+                      checked={ic.float}
+                      onCheckedChange={(v) => updateCustomIcon(ic.id, { float: v })}
+                    />
+                    Float
+                  </label>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => removeCustomIcon(ic.id)}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
 
 /* --------------------- Export helpers --------------------- */
 

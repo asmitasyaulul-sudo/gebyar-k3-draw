@@ -26,6 +26,9 @@ import {
 } from "@/lib/store";
 import { Decorations } from "@/components/Decorations";
 import { LotteryMachine } from "@/components/LotteryMachine";
+import { WheelDraw } from "@/components/WheelDraw";
+import { BallsDraw } from "@/components/BallsDraw";
+import { CustomIcons } from "@/components/CustomIcons";
 import { WinnerCards } from "@/components/WinnerCards";
 import { AdminPanel, exportWinners } from "@/components/AdminPanel";
 import { Button } from "@/components/ui/button";
@@ -55,6 +58,8 @@ import {
   playClick,
   playSiren,
   playSpin,
+  playCustomMusic,
+  fadeOutCustomMusic,
 } from "@/lib/sounds";
 
 export const Route = createFileRoute("/")({
@@ -153,10 +158,15 @@ function Index() {
     setSpinning(true);
     const vol = settings.muted ? 0 : settings.volume;
     playClick(vol);
-    playSpin(6500, vol);
+    if (settings.customMusic && vol > 0) {
+      playCustomMusic(settings.customMusic, vol);
+    } else {
+      playSpin(6500, vol);
+    }
     setTimeout(() => playSiren(vol), 6200);
     setTimeout(() => {
       setSpinning(false);
+      if (settings.customMusic) fadeOutCustomMusic(700);
       const firstNum = picks[0]?.number ?? "•••";
       setReelFinal([firstNum.slice(-3, -2) || "•", firstNum.slice(-2, -1) || "•", firstNum.slice(-1) || "•"]);
       setLatest(picks);
@@ -215,6 +225,7 @@ function Index() {
       />
 
       <Decorations />
+      <CustomIcons editable={isAdmin && !presentation} />
 
       {/* Top bar */}
       <div className="relative z-10 mx-auto flex max-w-[1600px] flex-wrap items-center gap-3 px-4 pt-4 sm:px-6">
@@ -323,7 +334,13 @@ function Index() {
 
       {/* Machine */}
       <div className="relative z-10 mt-8 px-4 sm:px-6">
-        <LotteryMachine spinning={spinning} pool={pool} finalNumbers={reelFinal} />
+        {settings.drawStyle === "wheel" ? (
+          <WheelDraw spinning={spinning} pool={pool} finalNumbers={reelFinal} />
+        ) : settings.drawStyle === "balls" ? (
+          <BallsDraw spinning={spinning} pool={pool} finalNumbers={reelFinal} />
+        ) : (
+          <LotteryMachine spinning={spinning} pool={pool} finalNumbers={reelFinal} />
+        )}
       </div>
 
       {/* Controls */}
