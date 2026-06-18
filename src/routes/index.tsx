@@ -111,6 +111,26 @@ function Index() {
     document.documentElement.classList.toggle("dark", settings.dark);
   }, [settings.dark]);
 
+  // Keyboard shortcut: M toggles reduced motion on the main draw screen
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInput =
+        /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName) ||
+        target.isContentEditable;
+      if (isInput) return;
+      if (loginOpen || adminOpen || historyOpen) return;
+      if (e.key === "m" || e.key === "M") {
+        e.preventDefault();
+        const next = !settings.reducedMotion;
+        setSettings({ reducedMotion: next });
+        toast.info(next ? "Reduced motion enabled" : "Reduced motion disabled");
+      }
+    };
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [settings.reducedMotion, setSettings, loginOpen, adminOpen, historyOpen]);
+
   const wonIds = useMemo(
     () => new Set(winners.flatMap((w) => w.participants.map((p) => p.id))),
     [winners],

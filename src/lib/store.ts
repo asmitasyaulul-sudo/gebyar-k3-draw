@@ -179,6 +179,25 @@ export const useApp = create<AppState>()(
     }),
     {
       name: "gebyar-k3-store",
+      version: 1,
+      migrate: (persistedState: any) => {
+        const base =
+          typeof persistedState === "object" && persistedState !== null
+            ? persistedState
+            : {};
+        const persistedSettings = base.settings ?? {};
+        return {
+          ...base,
+          settings: {
+            ...defaultSettings,
+            ...persistedSettings,
+            ornaments: {
+              ...defaultSettings.ornaments,
+              ...(persistedSettings.ornaments ?? {}),
+            },
+          },
+        };
+      },
       partialize: (s) => ({
         participants: s.participants,
         winners: s.winners,
