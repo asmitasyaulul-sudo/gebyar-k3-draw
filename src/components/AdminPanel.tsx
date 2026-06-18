@@ -830,6 +830,148 @@ function ChangePassword() {
   );
 }
 
+/* --------------------- Media Tab (music + custom flying icons) --------------------- */
+
+function MediaTab() {
+  const { settings, setSettings, addCustomIcon, removeCustomIcon, updateCustomIcon } = useApp();
+  const musicRef = useRef<HTMLInputElement>(null);
+  const iconRef = useRef<HTMLInputElement>(null);
+
+  const handleMusic = (f: File) => {
+    const r = new FileReader();
+    r.onload = () => {
+      setSettings({ customMusic: r.result as string, customMusicName: f.name });
+      toast.success(`Music set: ${f.name}`);
+    };
+    r.readAsDataURL(f);
+  };
+
+  const handleIcon = (files: FileList) => {
+    Array.from(files).forEach((f, i) => {
+      const r = new FileReader();
+      r.onload = () => {
+        addCustomIcon({
+          id: crypto.randomUUID(),
+          url: r.result as string,
+          x: 20 + ((i * 17) % 60),
+          y: 30 + ((i * 23) % 40),
+          size: 96,
+          float: true,
+        });
+      };
+      r.readAsDataURL(f);
+    });
+    toast.success(`Added ${files.length} icon(s). Drag them on the main screen.`);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Music */}
+      <div className="rounded-lg border p-4">
+        <div className="mb-2 flex items-center gap-2 font-display text-sm">
+          <Music className="h-4 w-4" /> Custom draw music
+        </div>
+        <p className="mb-3 text-xs text-muted-foreground">
+          Upload an MP3/WAV/OGG file. It will replace the built-in spin sound during a draw, and fades out when the winner is revealed.
+        </p>
+        <input
+          ref={musicRef}
+          type="file"
+          accept="audio/*"
+          className="hidden"
+          onChange={(e) => e.target.files?.[0] && handleMusic(e.target.files[0])}
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button onClick={() => musicRef.current?.click()}>
+            <Upload className="mr-2 h-4 w-4" /> Upload music
+          </Button>
+          {settings.customMusic && (
+            <>
+              <audio src={settings.customMusic} controls className="h-9 max-w-xs" />
+              <span className="text-xs text-muted-foreground">
+                {settings.customMusicName || "uploaded.mp3"}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() =>
+                  setSettings({ customMusic: undefined, customMusicName: undefined })
+                }
+              >
+                <X className="mr-1 h-3 w-3" /> Remove
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Custom flying icons */}
+      <div className="rounded-lg border p-4">
+        <div className="mb-2 flex items-center gap-2 font-display text-sm">
+          <SparklesIcon className="h-4 w-4" /> Custom flying icons
+        </div>
+        <p className="mb-3 text-xs text-muted-foreground">
+          Upload PNG/SVG/JPG images to float on the stage. While logged in, drag them on the main screen to reposition. Use the floating toolbar on each icon to resize, toggle motion, or remove.
+        </p>
+        <input
+          ref={iconRef}
+          type="file"
+          accept="image/*"
+          multiple
+          className="hidden"
+          onChange={(e) => e.target.files && handleIcon(e.target.files)}
+        />
+        <Button onClick={() => iconRef.current?.click()}>
+          <Plus className="mr-2 h-4 w-4" /> Upload icons
+        </Button>
+
+        {!!settings.customIcons.length && (
+          <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {settings.customIcons.map((ic) => (
+              <div
+                key={ic.id}
+                className="relative flex flex-col items-center gap-2 rounded-lg border bg-secondary/40 p-2"
+              >
+                <img src={ic.url} className="h-16 w-16 object-contain" alt="" />
+                <div className="w-full">
+                  <Label className="text-[10px] text-muted-foreground">
+                    Size {ic.size}px
+                  </Label>
+                  <Slider
+                    className="mt-1"
+                    min={32}
+                    max={240}
+                    value={[ic.size]}
+                    onValueChange={(v) => updateCustomIcon(ic.id, { size: v[0] })}
+                  />
+                </div>
+                <div className="flex w-full items-center justify-between text-xs">
+                  <label className="flex items-center gap-1">
+                    <Switch
+                      checked={ic.float}
+                      onCheckedChange={(v) => updateCustomIcon(ic.id, { float: v })}
+                    />
+                    Float
+                  </label>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => removeCustomIcon(ic.id)}
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+
 /* --------------------- Export helpers --------------------- */
 
 export function exportWinners(
