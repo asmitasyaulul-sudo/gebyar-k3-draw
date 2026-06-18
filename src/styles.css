@@ -146,6 +146,7 @@
 @keyframes stage-light { 0%,100%{opacity:.3; transform:scaleY(1)} 50%{opacity:.9; transform:scaleY(1.1)} }
 @keyframes sparkle { 0%,100%{opacity:0; transform:scale(.5)} 50%{opacity:1; transform:scale(1.2)} }
 @keyframes winner-pop { 0%{transform:scale(.5) rotateY(180deg); opacity:0} 60%{transform:scale(1.08) rotateY(0); opacity:1} 100%{transform:scale(1) rotateY(0)} }
+@keyframes bounce-ball { 0%,100%{transform:translateY(0) rotate(0)} 25%{transform:translateY(-40px) rotate(120deg)} 50%{transform:translateY(-10px) rotate(240deg)} 75%{transform:translateY(-55px) rotate(330deg)} }
 
 @utility anim-spin-slow { animation: spin-slow 8s linear infinite; }
 @utility anim-spin-fast { animation: spin-slow 2.5s linear infinite; }
@@ -161,6 +162,7 @@
 @utility anim-stage { animation: stage-light 1.6s ease-in-out infinite; }
 @utility anim-sparkle { animation: sparkle 2s ease-in-out infinite; }
 @utility anim-winner-pop { animation: winner-pop .8s cubic-bezier(.22,1.5,.36,1) both; }
+@utility anim-bounce-ball { animation: bounce-ball 1.6s ease-in-out infinite; }
 
 /* Scrollbar in machine */
 @utility no-scrollbar {
