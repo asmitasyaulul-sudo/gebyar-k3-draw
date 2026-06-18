@@ -147,7 +147,7 @@ function Index() {
       });
       playCelebration(vol);
       playApplause(vol);
-      if (settings.ornaments.confetti) burstConfetti();
+      if (settings.ornaments.confetti && !settings.reducedMotion) burstConfetti();
     }, 7000);
   };
 

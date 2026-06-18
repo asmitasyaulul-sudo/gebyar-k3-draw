@@ -120,7 +120,7 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
               </Select>
             </div>
             <div>
-              <Label>Animation speed</Label>
+              <Label>Animation speed preset</Label>
               <Select
                 value={settings.animSpeed}
                 onValueChange={(v) => setSettings({ animSpeed: v as any })}
@@ -134,6 +134,30 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
                   <SelectItem value="fast">Fast</SelectItem>
                 </SelectContent>
               </Select>
+              <div className="mt-3">
+                <Label className="text-xs text-muted-foreground">
+                  Speed multiplier ({settings.animSpeedMultiplier.toFixed(2)}×)
+                </Label>
+                <Slider
+                  className="mt-2"
+                  value={[settings.animSpeedMultiplier * 100]}
+                  min={50}
+                  max={200}
+                  step={5}
+                  onValueChange={(v) =>
+                    setSettings({ animSpeedMultiplier: v[0] / 100 })
+                  }
+                />
+              </div>
+              <div className="mt-3 flex items-center gap-2">
+                <Switch
+                  checked={settings.reducedMotion}
+                  onCheckedChange={(v) => setSettings({ reducedMotion: v })}
+                />
+                <span className="text-sm text-muted-foreground">
+                  Reduced motion (limits confetti, flashes, particles)
+                </span>
+              </div>
             </div>
             <div>
               <Label>Volume ({Math.round(settings.volume * 100)}%)</Label>

@@ -55,6 +55,8 @@ export type Settings = {
   displayMode: DisplayMode;
   // Ornaments
   animSpeed: AnimSpeed;
+  animSpeedMultiplier: number; // 0.5 (slower) - 2 (faster); 1 = normal
+  reducedMotion: boolean;
   ornaments: Ornaments;
   // Sound
   volume: number;
@@ -104,6 +106,8 @@ const defaultSettings: Settings = {
   winnersPerRound: 5,
   displayMode: "number_name_dept",
   animSpeed: "normal",
+  animSpeedMultiplier: 1,
+  reducedMotion: false,
   ornaments: {
     gears: true,
     helmets: true,
