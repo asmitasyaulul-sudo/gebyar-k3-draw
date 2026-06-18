@@ -16,7 +16,6 @@ import {
   Sun,
   Volume2,
   VolumeX,
-  X,
   Download,
 } from "lucide-react";
 import {
