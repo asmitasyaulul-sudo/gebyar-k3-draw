@@ -65,10 +65,11 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
   return (
     <div className="space-y-4">
       <Tabs defaultValue="participants" className="w-full">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="participants">Participants</TabsTrigger>
           <TabsTrigger value="draw">Draw</TabsTrigger>
           <TabsTrigger value="visuals">Visuals</TabsTrigger>
+          <TabsTrigger value="media">Media</TabsTrigger>
           <TabsTrigger value="ornaments">Ornaments</TabsTrigger>
           <TabsTrigger value="account">Account</TabsTrigger>
         </TabsList>
@@ -84,6 +85,26 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
         </TabsContent>
 
         <TabsContent value="draw" className="mt-4 space-y-4">
+          <div>
+            <Label className="mb-2 block">Draw animation style</Label>
+            <div className="grid gap-2 sm:grid-cols-3">
+              {DRAW_STYLES.map((s) => (
+                <button
+                  key={s.value}
+                  type="button"
+                  onClick={() => setSettings({ drawStyle: s.value })}
+                  className={`rounded-lg border-2 p-3 text-left transition ${
+                    settings.drawStyle === s.value
+                      ? "border-safety-yellow glow-gold bg-secondary"
+                      : "border-border hover:border-primary"
+                  }`}
+                >
+                  <div className="font-display text-sm">{s.label}</div>
+                  <div className="mt-0.5 text-xs text-muted-foreground">{s.desc}</div>
+                </button>
+              ))}
+            </div>
+          </div>
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
               <Label>Winners per round</Label>
@@ -203,6 +224,10 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
 
         <TabsContent value="visuals" className="mt-4">
           <VisualsTab />
+        </TabsContent>
+
+        <TabsContent value="media" className="mt-4">
+          <MediaTab />
         </TabsContent>
 
         <TabsContent value="ornaments" className="mt-4 space-y-2">
