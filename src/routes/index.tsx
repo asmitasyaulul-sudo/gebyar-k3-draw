@@ -153,38 +153,65 @@ function Index() {
 
   const totalWinners = winners.reduce((a, w) => a + w.participants.length, 0);
 
-  const handleDraw = () => {
+  const [musicPlaying, setMusicPlaying] = useState(false);
+  useEffect(() => {
+    setMusicPlaying(isMusicPlaying());
+    return subscribeMusic(setMusicPlaying);
+  }, []);
+  useEffect(() => {
+    setCustomMusicVolume(settings.muted ? 0 : settings.volume);
+  }, [settings.muted, settings.volume]);
+
+  const toggleMusic = () => {
+    if (!settings.customMusic) {
+      toast.error("Upload a music file in Admin → Media first.");
+      return;
+    }
+    if (isMusicPlaying()) pauseCustomMusic();
+    else playCustomMusic(settings.customMusic, settings.muted ? 0 : settings.volume, true);
+  };
+
+  const handleDraw = async () => {
     if (spinning) return;
     if (!pool.length) return toast.error("No participants remaining.");
     const count = Math.min(settings.winnersPerRound, pool.length);
     const shuffled = [...pool].sort(() => Math.random() - 0.5);
     const picks = shuffled.slice(0, count);
     setLatest([]);
-    setReelFinal(["•••", "•••", "•••"]);
     setSpinning(true);
     const vol = settings.muted ? 0 : settings.volume;
     playClick(vol);
-    if (settings.customMusic && vol > 0) {
-      playCustomMusic(settings.customMusic, vol);
-    } else {
-      playSpin(6500, vol);
-    }
-    setTimeout(() => playSiren(vol), 6200);
-    setTimeout(() => {
-      setSpinning(false);
-      if (settings.customMusic) fadeOutCustomMusic(700);
-      const firstNum = picks[0]?.number ?? "•••";
-      setReelFinal([firstNum.slice(-3, -2) || "•", firstNum.slice(-2, -1) || "•", firstNum.slice(-1) || "•"]);
-      setLatest(picks);
-      pushWinnerEntry({
-        round: (winners[winners.length - 1]?.round ?? 0) + 1,
-        participants: picks,
-        timestamp: Date.now(),
-      });
+
+    const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+    const perSpin = 1400;
+    const revealed: Participant[] = [];
+
+    for (let i = 0; i < picks.length; i++) {
+      const p = picks[i];
+      setReelFinal(["•", "•", "•"]);
+      playSpin(perSpin, vol);
+      await sleep(perSpin);
+      const num = p.number;
+      setReelFinal([
+        num.slice(-3, -2) || "•",
+        num.slice(-2, -1) || "•",
+        num.slice(-1) || "•",
+      ]);
+      revealed.push(p);
+      setLatest([...revealed]);
+      playSiren(vol);
       playCelebration(vol);
       playApplause(vol);
       if (settings.ornaments.confetti && !settings.reducedMotion) burstConfetti();
-    }, 7000);
+      await sleep(900);
+    }
+
+    pushWinnerEntry({
+      round: (winners[winners.length - 1]?.round ?? 0) + 1,
+      participants: picks,
+      timestamp: Date.now(),
+    });
+    setSpinning(false);
   };
 
   const handleResetRound = () => {
