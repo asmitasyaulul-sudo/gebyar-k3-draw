@@ -584,7 +584,49 @@ function Index() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Winner celebration popup */}
+      <Dialog open={!!popupWinner} onOpenChange={(o) => !o && setPopupWinner(null)}>
+        <DialogContent className="max-w-lg overflow-hidden border-safety-yellow/40 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white">
+          <DialogHeader>
+            <DialogTitle className="text-center font-display text-sm tracking-[0.4em] text-safety-yellow">
+              🎉 SELAMAT PEMENANG 🎉
+            </DialogTitle>
+          </DialogHeader>
+          {popupWinner && (
+            <div className="relative py-4 text-center">
+              <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,rgba(255,193,7,0.25),transparent_70%)]" />
+              {popupWinner.photoUrl && (
+                <img
+                  src={popupWinner.photoUrl}
+                  alt={popupWinner.name}
+                  className="mx-auto mb-3 h-24 w-24 rounded-full border-4 border-safety-yellow object-cover shadow-[0_0_40px_rgba(255,193,7,0.6)]"
+                />
+              )}
+              <div className="font-display text-6xl font-black tracking-wider text-gradient-gold drop-shadow-[0_4px_20px_rgba(255,193,7,0.5)] anim-sparkle">
+                {popupWinner.number}
+              </div>
+              {popupWinner.name && (
+                <div className="mt-3 font-display text-2xl font-bold text-white">
+                  {popupWinner.name}
+                </div>
+              )}
+              {popupWinner.department && (
+                <div className="mt-1 text-sm uppercase tracking-[0.3em] text-safety-yellow/90">
+                  {popupWinner.department}
+                </div>
+              )}
+              <div className="mt-4 flex items-center justify-center gap-2">
+                <span className="hazard-stripes h-1 w-16 rounded" />
+                <PartyPopper className="h-5 w-5 text-safety-orange anim-sparkle" />
+                <span className="hazard-stripes h-1 w-16 rounded" />
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </main>
+
   );
 }
 
