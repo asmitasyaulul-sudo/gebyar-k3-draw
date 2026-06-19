@@ -290,6 +290,19 @@ function Index() {
           {!presentation && (
             <>
               <Button
+                variant={musicPlaying ? "default" : "secondary"}
+                size="sm"
+                onClick={toggleMusic}
+                aria-label="Music"
+                title={settings.customMusicName || "Custom music"}
+              >
+                {musicPlaying ? (
+                  <Pause className="h-4 w-4" />
+                ) : (
+                  <Music className="h-4 w-4" />
+                )}
+              </Button>
+              <Button
                 variant="secondary"
                 size="sm"
                 onClick={() => setSettings({ muted: !settings.muted })}
