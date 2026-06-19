@@ -20,10 +20,12 @@ const WHEEL_COLORS = [
 
 export function WheelDraw({ spinning, pool, finalNumbers }: Props) {
   const items = useMemo(() => {
-    const list = pool.slice(0, 16).map((p) => p.number);
+    const list = pool.map((p) => p.number);
     while (list.length < 8) list.push(String(list.length + 1).padStart(3, "0"));
     return list;
   }, [pool]);
+  const showLabels = items.length <= 60;
+
 
   const seg = 360 / items.length;
   const [rot, setRot] = useState(0);
@@ -88,25 +90,32 @@ export function WheelDraw({ spinning, pool, finalNumbers }: Props) {
                 .join(",")})`,
             }}
           >
-            {items.map((num, i) => {
-              const angle = i * seg + seg / 2;
-              return (
-                <div
-                  key={i}
-                  className="absolute left-1/2 top-1/2 origin-left text-white font-display font-black text-xs sm:text-sm"
-                  style={{
-                    transform: `rotate(${angle}deg) translate(38%, -50%)`,
-                  }}
-                >
-                  <span
-                    className="block"
-                    style={{ transform: "rotate(180deg)", textShadow: "0 1px 2px rgba(0,0,0,.7)" }}
+            {showLabels &&
+              items.map((num, i) => {
+                const angle = i * seg + seg / 2;
+                const fontSize =
+                  items.length > 30 ? 8 : items.length > 18 ? 10 : 12;
+                return (
+                  <div
+                    key={i}
+                    className="absolute left-1/2 top-1/2 origin-left text-white font-display font-black"
+                    style={{
+                      transform: `rotate(${angle}deg) translate(38%, -50%)`,
+                      fontSize,
+                    }}
                   >
-                    {num}
-                  </span>
-                </div>
-              );
-            })}
+                    <span
+                      className="block"
+                      style={{
+                        transform: "rotate(180deg)",
+                        textShadow: "0 1px 2px rgba(0,0,0,.7)",
+                      }}
+                    >
+                      {num}
+                    </span>
+                  </div>
+                );
+              })}
             {/* Hub */}
             <div className="absolute left-1/2 top-1/2 z-10 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-4 border-amber-400 bg-slate-900 shadow-inner">
               <span className="font-display text-xs tracking-widest text-amber-300">K3</span>
