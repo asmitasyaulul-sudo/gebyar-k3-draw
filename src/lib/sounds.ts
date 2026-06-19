@@ -98,17 +98,77 @@ export function playApplause(volume = 0.5) {
 
 /* --------- Custom music (user-uploaded) --------- */
 let musicEl: HTMLAudioElement | null = null;
+let musicUrl: string | null = null;
+const musicListeners = new Set<(playing: boolean) => void>();
 
-export function playCustomMusic(url: string, volume = 0.6, loop = false) {
-  stopCustomMusic();
-  try {
+function emitMusic(playing: boolean) {
+  musicListeners.forEach((cb) => {
+    try {
+      cb(playing);
+    } catch {
+      /* ignore */
+    }
+  });
+}
+
+export function subscribeMusic(cb: (playing: boolean) => void) {
+  musicListeners.add(cb);
+  return () => musicListeners.delete(cb);
+}
+
+export function isMusicPlaying() {
+  return !!musicEl && !musicEl.paused;
+}
+
+function ensureMusicEl(url: string, volume: number, loop: boolean) {
+  if (!musicEl || musicUrl !== url) {
+    if (musicEl) {
+      try {
+        musicEl.pause();
+      } catch {
+        /* ignore */
+      }
+    }
     musicEl = new Audio(url);
-    musicEl.volume = Math.max(0, Math.min(1, volume));
-    musicEl.loop = loop;
-    void musicEl.play().catch(() => {});
+    musicUrl = url;
+    musicEl.addEventListener("ended", () => emitMusic(false));
+    musicEl.addEventListener("pause", () => emitMusic(false));
+    musicEl.addEventListener("play", () => emitMusic(true));
+  }
+  musicEl.loop = loop;
+  musicEl.volume = Math.max(0, Math.min(1, volume));
+  return musicEl;
+}
+
+export function playCustomMusic(url: string, volume = 0.6, loop = true) {
+  try {
+    const el = ensureMusicEl(url, volume, loop);
+    void el.play().catch(() => {});
   } catch {
     /* ignore */
   }
+}
+
+export function pauseCustomMusic() {
+  if (musicEl) {
+    try {
+      musicEl.pause();
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
+export function toggleCustomMusic(url: string, volume = 0.6, loop = true) {
+  if (isMusicPlaying()) {
+    pauseCustomMusic();
+  } else {
+    playCustomMusic(url, volume, loop);
+  }
+}
+
+export function setCustomMusicVolume(volume: number) {
+  if (musicEl) musicEl.volume = Math.max(0, Math.min(1, volume));
 }
 
 export function stopCustomMusic() {
@@ -120,6 +180,8 @@ export function stopCustomMusic() {
       /* ignore */
     }
     musicEl = null;
+    musicUrl = null;
+    emitMusic(false);
   }
 }
 
@@ -139,7 +201,11 @@ export function fadeOutCustomMusic(ms = 600) {
       } catch {
         /* ignore */
       }
-      if (musicEl === el) musicEl = null;
+      if (musicEl === el) {
+        musicEl = null;
+        musicUrl = null;
+      }
+      emitMusic(false);
     }
   }, ms / steps);
 }
