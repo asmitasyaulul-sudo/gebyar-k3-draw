@@ -154,6 +154,7 @@ function Index() {
   const totalWinners = winners.reduce((a, w) => a + w.participants.length, 0);
 
   const [musicPlaying, setMusicPlaying] = useState(false);
+  const [popupWinner, setPopupWinner] = useState<Participant | null>(null);
   useEffect(() => {
     setMusicPlaying(isMusicPlaying());
     const unsub = subscribeMusic(setMusicPlaying);
@@ -165,6 +166,27 @@ function Index() {
     setCustomMusicVolume(settings.muted ? 0 : settings.volume);
   }, [settings.muted, settings.volume]);
 
+  // Autoplay saved music on load (falls back to play on first user gesture)
+  useEffect(() => {
+    if (!settings.customMusic || settings.muted) return;
+    const vol = settings.volume;
+    playCustomMusic(settings.customMusic, vol, true);
+    if (!isMusicPlaying()) {
+      const kick = () => {
+        playCustomMusic(settings.customMusic!, vol, true);
+        window.removeEventListener("pointerdown", kick);
+        window.removeEventListener("keydown", kick);
+      };
+      window.addEventListener("pointerdown", kick, { once: true });
+      window.addEventListener("keydown", kick, { once: true });
+      return () => {
+        window.removeEventListener("pointerdown", kick);
+        window.removeEventListener("keydown", kick);
+      };
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [settings.customMusic]);
+
   const toggleMusic = () => {
     if (!settings.customMusic) {
       toast.error("Upload a music file in Admin → Media first.");
@@ -173,6 +195,7 @@ function Index() {
     if (isMusicPlaying()) pauseCustomMusic();
     else playCustomMusic(settings.customMusic, settings.muted ? 0 : settings.volume, true);
   };
+
 
   const handleDraw = async () => {
     if (spinning) return;
