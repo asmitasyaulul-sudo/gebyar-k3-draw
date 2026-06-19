@@ -61,8 +61,12 @@ import {
   playSiren,
   playSpin,
   playCustomMusic,
-  fadeOutCustomMusic,
+  pauseCustomMusic,
+  setCustomMusicVolume,
+  subscribeMusic,
+  isMusicPlaying,
 } from "@/lib/sounds";
+import { Music, Pause } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
