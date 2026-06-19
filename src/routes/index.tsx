@@ -225,12 +225,15 @@ function Index() {
       ]);
       revealed.push(p);
       setLatest([...revealed]);
+      setPopupWinner(p);
       playSiren(vol);
       playCelebration(vol);
       playApplause(vol);
       if (settings.ornaments.confetti && !settings.reducedMotion) burstConfetti();
-      await sleep(900);
+      await sleep(1600);
     }
+    setPopupWinner(null);
+
 
     pushWinnerEntry({
       round: (winners[winners.length - 1]?.round ?? 0) + 1,
