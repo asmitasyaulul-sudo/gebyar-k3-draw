@@ -206,6 +206,8 @@ function Index() {
     const shuffled = [...pool].sort(() => Math.random() - 0.5);
     const picks = shuffled.slice(0, count);
     setLatest([]);
+    setPopupWinners([]);
+    setPopupOpen(true);
     setSpinning(true);
     const vol = settings.muted ? 0 : settings.volume;
     playClick(vol);
@@ -227,14 +229,14 @@ function Index() {
       ]);
       revealed.push(p);
       setLatest([...revealed]);
-      setPopupWinner(p);
+      setPopupWinners([...revealed]);
       playSiren(vol);
       playCelebration(vol);
       playApplause(vol);
       if (settings.ornaments.confetti && !settings.reducedMotion) burstConfetti();
-      await sleep(1600);
+      await sleep(1400);
     }
-    setPopupWinner(null);
+
 
 
     pushWinnerEntry({
