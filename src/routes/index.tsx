@@ -154,7 +154,9 @@ function Index() {
   const totalWinners = winners.reduce((a, w) => a + w.participants.length, 0);
 
   const [musicPlaying, setMusicPlaying] = useState(false);
-  const [popupWinner, setPopupWinner] = useState<Participant | null>(null);
+  const [popupWinners, setPopupWinners] = useState<Participant[]>([]);
+  const [popupOpen, setPopupOpen] = useState(false);
+
   useEffect(() => {
     setMusicPlaying(isMusicPlaying());
     const unsub = subscribeMusic(setMusicPlaying);
