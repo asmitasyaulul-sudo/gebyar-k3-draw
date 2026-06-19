@@ -20,10 +20,12 @@ const WHEEL_COLORS = [
 
 export function WheelDraw({ spinning, pool, finalNumbers }: Props) {
   const items = useMemo(() => {
-    const list = pool.slice(0, 16).map((p) => p.number);
+    const list = pool.map((p) => p.number);
     while (list.length < 8) list.push(String(list.length + 1).padStart(3, "0"));
     return list;
   }, [pool]);
+  const showLabels = items.length <= 60;
+
 
   const seg = 360 / items.length;
   const [rot, setRot] = useState(0);
