@@ -156,7 +156,10 @@ function Index() {
   const [musicPlaying, setMusicPlaying] = useState(false);
   useEffect(() => {
     setMusicPlaying(isMusicPlaying());
-    return subscribeMusic(setMusicPlaying);
+    const unsub = subscribeMusic(setMusicPlaying);
+    return () => {
+      unsub();
+    };
   }, []);
   useEffect(() => {
     setCustomMusicVolume(settings.muted ? 0 : settings.volume);
