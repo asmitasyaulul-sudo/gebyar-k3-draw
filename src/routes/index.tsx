@@ -208,28 +208,29 @@ function Index() {
     setLatest([]);
     setPopupWinners([]);
     setPopupOpen(true);
-    setSpinning(true);
     const vol = settings.muted ? 0 : settings.volume;
     playClick(vol);
 
     const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
     const perSpin = 1600;
-    const holdMs = 1600; // brief pause on each winner
+    const holdMs = 1800; // brief pause on each winner so the machine clearly shows the number
     const revealed: Participant[] = [];
 
     for (let i = 0; i < picks.length; i++) {
       const p = picks[i];
-      // spin phase
+      // spin phase: tumble the reels
       setReelFinal(["•", "•", "•"]);
+      setSpinning(true);
       playSpin(perSpin, vol);
       await sleep(perSpin);
-      // land on this winner
+      // land on this winner — stop the reels so digits lock in clearly
       const num = p.number;
       setReelFinal([
         num.slice(-3, -2) || "•",
         num.slice(-2, -1) || "•",
         num.slice(-1) || "•",
       ]);
+      setSpinning(false);
       revealed.push(p);
       setLatest([...revealed]);
       setPopupWinners([...revealed]);
@@ -237,7 +238,7 @@ function Index() {
       playCelebration(vol);
       playApplause(vol);
       if (settings.ornaments.confetti && !settings.reducedMotion) burstConfetti();
-      // hold so the audience sees the winner on the draw
+      // hold so the audience clearly sees this winner before the next spin
       await sleep(holdMs);
     }
 
