@@ -413,6 +413,20 @@ function ParticipantsTab({
         >
           <Plus className="mr-2 h-4 w-4" /> Add manually
         </Button>
+        {participants.length > 0 && (
+          <ConfirmAction
+            title="Delete all participants?"
+            desc={`This will permanently remove all ${participants.length} participants. This action cannot be undone.`}
+            onConfirm={() => {
+              clearParticipants();
+              toast.success("All participants deleted.");
+            }}
+          >
+            <Button variant="destructive">
+              <Trash2 className="mr-2 h-4 w-4" /> Delete all
+            </Button>
+          </ConfirmAction>
+        )}
         <Input
           placeholder="Search…"
           value={q}
