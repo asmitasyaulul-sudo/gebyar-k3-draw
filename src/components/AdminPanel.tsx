@@ -57,6 +57,7 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
     addParticipant,
     updateParticipant,
     removeParticipant,
+    clearParticipants,
     winners,
     resetAllWinners,
     setAdmin,
