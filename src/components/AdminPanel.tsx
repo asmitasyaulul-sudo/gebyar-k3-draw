@@ -312,12 +312,14 @@ function ParticipantsTab({
   addParticipant,
   updateParticipant,
   removeParticipant,
+  clearParticipants,
 }: {
   participants: Participant[];
   setParticipants: (p: Participant[]) => void;
   addParticipant: (p: Participant) => void;
   updateParticipant: (id: string, patch: Partial<Participant>) => void;
   removeParticipant: (id: string) => void;
+  clearParticipants: () => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [q, setQ] = useState("");
