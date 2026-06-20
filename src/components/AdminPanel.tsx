@@ -82,6 +82,7 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
             addParticipant={addParticipant}
             updateParticipant={updateParticipant}
             removeParticipant={removeParticipant}
+            clearParticipants={clearParticipants}
           />
         </TabsContent>
 
