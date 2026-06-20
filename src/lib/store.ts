@@ -169,6 +169,7 @@ export const useApp = create<AppState>()(
         set((s) => ({
           participants: s.participants.filter((x) => x.id !== id),
         })),
+      clearParticipants: () => set({ participants: [] }),
 
       pushWinnerEntry: (w) =>
         set((s) => ({
