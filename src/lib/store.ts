@@ -93,6 +93,7 @@ export type AppState = {
   addParticipant: (p: Participant) => void;
   updateParticipant: (id: string, patch: Partial<Participant>) => void;
   removeParticipant: (id: string) => void;
+  clearParticipants: () => void;
 
   pushWinnerEntry: (w: WinnerEntry) => void;
   resetCurrentRound: () => void;
@@ -168,6 +169,7 @@ export const useApp = create<AppState>()(
         set((s) => ({
           participants: s.participants.filter((x) => x.id !== id),
         })),
+      clearParticipants: () => set({ participants: [] }),
 
       pushWinnerEntry: (w) =>
         set((s) => ({

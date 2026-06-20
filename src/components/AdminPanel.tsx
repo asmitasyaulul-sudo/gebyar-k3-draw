@@ -57,6 +57,7 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
     addParticipant,
     updateParticipant,
     removeParticipant,
+    clearParticipants,
     winners,
     resetAllWinners,
     setAdmin,
@@ -81,6 +82,7 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
             addParticipant={addParticipant}
             updateParticipant={updateParticipant}
             removeParticipant={removeParticipant}
+            clearParticipants={clearParticipants}
           />
         </TabsContent>
 
@@ -312,12 +314,14 @@ function ParticipantsTab({
   addParticipant,
   updateParticipant,
   removeParticipant,
+  clearParticipants,
 }: {
   participants: Participant[];
   setParticipants: (p: Participant[]) => void;
   addParticipant: (p: Participant) => void;
   updateParticipant: (id: string, patch: Partial<Participant>) => void;
   removeParticipant: (id: string) => void;
+  clearParticipants: () => void;
 }) {
   const fileRef = useRef<HTMLInputElement>(null);
   const [q, setQ] = useState("");
@@ -409,6 +413,20 @@ function ParticipantsTab({
         >
           <Plus className="mr-2 h-4 w-4" /> Add manually
         </Button>
+        {participants.length > 0 && (
+          <ConfirmAction
+            title="Delete all participants?"
+            desc={`This will permanently remove all ${participants.length} participants. This action cannot be undone.`}
+            onConfirm={() => {
+              clearParticipants();
+              toast.success("All participants deleted.");
+            }}
+          >
+            <Button variant="destructive">
+              <Trash2 className="mr-2 h-4 w-4" /> Delete all
+            </Button>
+          </ConfirmAction>
+        )}
         <Input
           placeholder="Search…"
           value={q}
