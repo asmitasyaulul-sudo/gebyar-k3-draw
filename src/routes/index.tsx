@@ -591,69 +591,80 @@ function Index() {
         </DialogContent>
       </Dialog>
 
-      {/* Winner celebration popup (accumulates) */}
-      <Dialog open={popupOpen} onOpenChange={setPopupOpen}>
-        <DialogContent className="max-w-6xl overflow-hidden border-safety-yellow/40 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white">
-          <DialogHeader>
-            <DialogTitle className="text-center font-display text-sm tracking-[0.4em] text-safety-yellow">
-              🎉 SELAMAT PARA PEMENANG 🎉
-            </DialogTitle>
-          </DialogHeader>
-          <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,rgba(255,193,7,0.2),transparent_70%)]" />
-          <div className="max-h-[65vh] overflow-y-auto py-3">
-            {popupWinners.length === 0 ? (
-              <div className="py-10 text-center text-white/60">Drawing…</div>
-            ) : (
-              <div className="flex flex-wrap justify-center gap-4">
-                {popupWinners.map((w, i) => (
-                  <div
-                    key={`${w.id}-${i}`}
-                    className="anim-pop relative w-44 rounded-2xl border border-safety-yellow/40 bg-black/40 p-3 text-center shadow-[0_10px_30px_-10px_rgba(255,193,7,0.5)]"
-                    style={{
-                      animation: "popIn 0.55s cubic-bezier(0.34,1.56,0.64,1)",
-                    }}
-                  >
-                    {w.photoUrl && (
-                      <img
-                        src={w.photoUrl}
-                        alt={w.name}
-                        className="mx-auto mb-2 h-16 w-16 rounded-full border-2 border-safety-yellow object-cover"
-                      />
-                    )}
-                    <div className="font-display text-3xl font-black text-gradient-gold drop-shadow">
-                      {w.number}
-                    </div>
-                    {w.name && (
-                      <div className="mt-1 truncate font-display text-sm font-bold text-white">
-                        {w.name}
-                      </div>
-                    )}
-                    {w.department && (
-                      <div className="truncate text-[10px] uppercase tracking-[0.25em] text-safety-yellow/80">
-                        {w.department}
-                      </div>
-                    )}
-                    <div className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-safety-yellow px-2 py-0.5 font-display text-[10px] font-black text-slate-900">
-                      #{i + 1}
-                    </div>
-                  </div>
-                ))}
+      {/* Floating, non-blocking winner celebration panel — draw stays visible */}
+      {popupOpen && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 px-3 pb-3 sm:px-6 sm:pb-6">
+          <div className="pointer-events-auto mx-auto max-w-[1600px] overflow-hidden rounded-2xl border border-safety-yellow/40 bg-gradient-to-br from-slate-900/95 via-slate-950/95 to-slate-900/95 text-white shadow-[0_20px_60px_-10px_rgba(0,0,0,0.7)] backdrop-blur">
+            <div className="flex items-center justify-between gap-2 border-b border-white/10 px-4 py-2">
+              <div className="flex items-center gap-2">
+                <PartyPopper className="h-4 w-4 text-safety-yellow anim-sparkle" />
+                <span className="font-display text-[11px] tracking-[0.4em] text-safety-yellow">
+                  🎉 SELAMAT PARA PEMENANG
+                </span>
               </div>
-            )}
+              <div className="flex items-center gap-2">
+                <span className="font-display text-[10px] tracking-[0.3em] text-white/70">
+                  {spinning
+                    ? `REVEALING ${popupWinners.length} / ${Math.min(settings.winnersPerRound, pool.length + popupWinners.length)}`
+                    : `${popupWinners.length} WINNERS`}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setPopupOpen(false)}
+                  className="rounded-md border border-white/15 px-2 py-0.5 text-xs text-white/80 hover:bg-white/10"
+                  aria-label="Close winners panel"
+                >
+                  ✕
+                </button>
+              </div>
+            </div>
+            <div className="max-h-[34vh] overflow-y-auto px-3 py-3">
+              {popupWinners.length === 0 ? (
+                <div className="py-6 text-center text-xs text-white/60">
+                  Drawing…
+                </div>
+              ) : (
+                <div className="flex flex-wrap justify-center gap-3">
+                  {popupWinners.map((w, i) => (
+                    <div
+                      key={`${w.id}-${i}`}
+                      className="relative w-40 rounded-2xl border border-safety-yellow/40 bg-black/40 p-3 text-center shadow-[0_10px_30px_-10px_rgba(255,193,7,0.5)]"
+                      style={{
+                        animation: "popIn 0.55s cubic-bezier(0.34,1.56,0.64,1)",
+                      }}
+                    >
+                      {w.photoUrl && (
+                        <img
+                          src={w.photoUrl}
+                          alt={w.name}
+                          className="mx-auto mb-2 h-14 w-14 rounded-full border-2 border-safety-yellow object-cover"
+                        />
+                      )}
+                      <div className="font-display text-2xl font-black text-gradient-gold drop-shadow">
+                        {w.number}
+                      </div>
+                      {w.name && (
+                        <div className="mt-1 truncate font-display text-xs font-bold text-white">
+                          {w.name}
+                        </div>
+                      )}
+                      {w.department && (
+                        <div className="truncate text-[9px] uppercase tracking-[0.25em] text-safety-yellow/80">
+                          {w.department}
+                        </div>
+                      )}
+                      <div className="absolute -top-2 left-1/2 -translate-x-1/2 rounded-full bg-safety-yellow px-2 py-0.5 font-display text-[10px] font-black text-slate-900">
+                        #{i + 1}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            <style>{`@keyframes popIn { 0% { opacity: 0; transform: translateX(60px) scale(0.6) rotate(-6deg); } 60% { opacity: 1; transform: translateX(-6px) scale(1.06) rotate(1deg); } 100% { opacity: 1; transform: translateX(0) scale(1) rotate(0); } }`}</style>
           </div>
-          <div className="flex items-center justify-center gap-2 pt-1">
-            <PartyPopper className="h-5 w-5 text-safety-orange anim-sparkle" />
-            <span className="font-display text-[11px] tracking-[0.3em] text-safety-yellow">
-              {spinning
-                ? `REVEALING ${popupWinners.length} / ${Math.min(settings.winnersPerRound, pool.length + popupWinners.length)}`
-                : `${popupWinners.length} WINNERS`}
-            </span>
-            <PartyPopper className="h-5 w-5 text-safety-orange anim-sparkle" />
-          </div>
-          <style>{`@keyframes popIn { 0% { opacity: 0; transform: translateX(60px) scale(0.6) rotate(-6deg); } 60% { opacity: 1; transform: translateX(-6px) scale(1.06) rotate(1deg); } 100% { opacity: 1; transform: translateX(0) scale(1) rotate(0); } }`}</style>
-        </DialogContent>
-
-      </Dialog>
+        </div>
+      )}
     </main>
 
   );
