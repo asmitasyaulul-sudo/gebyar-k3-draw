@@ -24,34 +24,68 @@ export function WheelDraw({ spinning, pool, finalNumbers }: Props) {
     while (list.length < 8) list.push(String(list.length + 1).padStart(3, "0"));
     return list;
   }, [pool]);
-  const showLabels = items.length <= 60;
-
 
   const seg = 360 / items.length;
   const [rot, setRot] = useState(0);
+  const rotRef = useRef(0);
   const rafRef = useRef<number | null>(null);
+  const [landing, setLanding] = useState(false);
+
+  const targetNum =
+    finalNumbers?.[0] && finalNumbers[0] !== "•" ? finalNumbers[0] : null;
 
   useEffect(() => {
-    if (spinning) {
-      let start: number | null = null;
-      const step = (t: number) => {
-        if (start === null) start = t;
-        setRot(((t - start) * 0.9) % 360);
-        rafRef.current = requestAnimationFrame(step);
-      };
-      rafRef.current = requestAnimationFrame(step);
-    } else if (rafRef.current) {
+    rotRef.current = rot;
+  }, [rot]);
+
+  // Drive spin vs land
+  useEffect(() => {
+    // Always cancel any active RAF before deciding
+    if (rafRef.current) {
       cancelAnimationFrame(rafRef.current);
       rafRef.current = null;
     }
-    return () => {
-      if (rafRef.current) cancelAnimationFrame(rafRef.current);
-    };
-  }, [spinning]);
 
-  const display = !spinning && finalNumbers?.[0]
-    ? finalNumbers[0]
-    : items[Math.floor((360 - (rot % 360)) / seg) % items.length] ?? "•••";
+    if (targetNum) {
+      // Land on the winner's slice
+      const idx = items.indexOf(targetNum);
+      if (idx >= 0) {
+        const center = idx * seg + seg / 2;
+        const current = rotRef.current;
+        // Pick a rotation a few turns ahead that lands center at top (0deg)
+        const base = Math.ceil(current / 360) * 360 + 720;
+        const target = base + (360 - center);
+        setLanding(true);
+        setRot(target);
+      }
+      return;
+    }
+
+    if (spinning) {
+      setLanding(false);
+      const startRot = rotRef.current;
+      let startT: number | null = null;
+      const step = (t: number) => {
+        if (startT === null) startT = t;
+        setRot(startRot + (t - startT) * 0.9);
+        rafRef.current = requestAnimationFrame(step);
+      };
+      rafRef.current = requestAnimationFrame(step);
+    }
+
+    return () => {
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+    };
+  }, [spinning, targetNum, items, seg]);
+
+  const display = targetNum ?? "•••";
+
+  // Label font scales with count; always show labels
+  const fontSize =
+    items.length > 120 ? 6 : items.length > 60 ? 8 : items.length > 30 ? 10 : 12;
 
   return (
     <div className="relative mx-auto w-full max-w-3xl">
@@ -84,38 +118,40 @@ export function WheelDraw({ spinning, pool, finalNumbers }: Props) {
             className="relative h-full w-full rounded-full border-[10px] border-slate-800 shadow-2xl"
             style={{
               transform: `rotate(${rot}deg)`,
-              transition: spinning ? "none" : "transform 0.4s ease-out",
+              transition: landing
+                ? "transform 1.4s cubic-bezier(0.18,0.9,0.22,1)"
+                : "none",
               background: `conic-gradient(${items
-                .map((_, i) => `${WHEEL_COLORS[i % WHEEL_COLORS.length]} ${i * seg}deg ${(i + 1) * seg}deg`)
+                .map(
+                  (_, i) =>
+                    `${WHEEL_COLORS[i % WHEEL_COLORS.length]} ${i * seg}deg ${(i + 1) * seg}deg`,
+                )
                 .join(",")})`,
             }}
           >
-            {showLabels &&
-              items.map((num, i) => {
-                const angle = i * seg + seg / 2;
-                const fontSize =
-                  items.length > 30 ? 8 : items.length > 18 ? 10 : 12;
-                return (
-                  <div
-                    key={i}
-                    className="absolute left-1/2 top-1/2 origin-left text-white font-display font-black"
+            {items.map((num, i) => {
+              const angle = i * seg + seg / 2;
+              return (
+                <div
+                  key={i}
+                  className="absolute left-1/2 top-1/2 origin-left text-white font-display font-black"
+                  style={{
+                    transform: `rotate(${angle}deg) translate(38%, -50%)`,
+                    fontSize,
+                  }}
+                >
+                  <span
+                    className="block"
                     style={{
-                      transform: `rotate(${angle}deg) translate(38%, -50%)`,
-                      fontSize,
+                      transform: "rotate(180deg)",
+                      textShadow: "0 1px 2px rgba(0,0,0,.7)",
                     }}
                   >
-                    <span
-                      className="block"
-                      style={{
-                        transform: "rotate(180deg)",
-                        textShadow: "0 1px 2px rgba(0,0,0,.7)",
-                      }}
-                    >
-                      {num}
-                    </span>
-                  </div>
-                );
-              })}
+                    {num}
+                  </span>
+                </div>
+              );
+            })}
             {/* Hub */}
             <div className="absolute left-1/2 top-1/2 z-10 flex h-20 w-20 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full border-4 border-amber-400 bg-slate-900 shadow-inner">
               <span className="font-display text-xs tracking-widest text-amber-300">K3</span>
@@ -126,7 +162,7 @@ export function WheelDraw({ spinning, pool, finalNumbers }: Props) {
         <div className="mt-5 flex items-center justify-center">
           <div className="rounded-xl border border-amber-400/40 bg-black/60 px-6 py-2 text-center">
             <div className="font-display text-[10px] tracking-[0.4em] text-amber-300">
-              {spinning ? "SPINNING…" : "WINNER"}
+              {targetNum ? "WINNER" : spinning ? "SPINNING…" : "READY"}
             </div>
             <div className="font-display text-3xl font-black tracking-wider text-white">
               {display}
