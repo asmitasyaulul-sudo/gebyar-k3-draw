@@ -93,6 +93,7 @@ export type AppState = {
   addParticipant: (p: Participant) => void;
   updateParticipant: (id: string, patch: Partial<Participant>) => void;
   removeParticipant: (id: string) => void;
+  clearParticipants: () => void;
 
   pushWinnerEntry: (w: WinnerEntry) => void;
   resetCurrentRound: () => void;
