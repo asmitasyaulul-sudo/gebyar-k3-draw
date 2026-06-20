@@ -213,14 +213,17 @@ function Index() {
     playClick(vol);
 
     const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
-    const perSpin = 1400;
+    const perSpin = 1600;
+    const holdMs = 1600; // brief pause on each winner
     const revealed: Participant[] = [];
 
     for (let i = 0; i < picks.length; i++) {
       const p = picks[i];
+      // spin phase
       setReelFinal(["•", "•", "•"]);
       playSpin(perSpin, vol);
       await sleep(perSpin);
+      // land on this winner
       const num = p.number;
       setReelFinal([
         num.slice(-3, -2) || "•",
@@ -234,10 +237,9 @@ function Index() {
       playCelebration(vol);
       playApplause(vol);
       if (settings.ornaments.confetti && !settings.reducedMotion) burstConfetti();
-      await sleep(1400);
+      // hold so the audience sees the winner on the draw
+      await sleep(holdMs);
     }
-
-
 
     pushWinnerEntry({
       round: (winners[winners.length - 1]?.round ?? 0) + 1,
