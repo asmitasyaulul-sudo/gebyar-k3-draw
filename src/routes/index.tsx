@@ -682,11 +682,11 @@ function Index() {
 }
 
 function Stat({
-  label,
+  tkey,
   value,
   highlight,
 }: {
-  label: string;
+  tkey: "statTotal" | "statRemaining" | "statWinners" | "statRound";
   value: number;
   highlight?: boolean;
 }) {
@@ -699,10 +699,29 @@ function Stat({
       <div className="font-display text-2xl font-black text-white drop-shadow sm:text-3xl">
         {value}
       </div>
-      <div className="mt-0.5 text-[10px] uppercase tracking-[0.25em] text-white/80 sm:text-xs">
-        {label}
-      </div>
+      <BText
+        k={tkey}
+        className="mt-0.5 block text-[10px] uppercase tracking-[0.25em] text-white/80 sm:text-xs"
+        secondaryClassName="block text-[10px] normal-case tracking-wider text-white/65"
+      />
     </div>
+  );
+}
+
+function TitleLine() {
+  const main = useText("titleMain");
+  const hi = useText("titleHighlight");
+  return (
+    <>
+      <span className="block">
+        {main.primary} <span className="text-gradient-gold">{hi.primary}</span>
+      </span>
+      {main.secondary && (
+        <span className="mt-1 block text-[0.55em] font-bold text-white/85">
+          {main.secondary} <span className="text-gradient-gold">{hi.secondary}</span>
+        </span>
+      )}
+    </>
   );
 }
 
