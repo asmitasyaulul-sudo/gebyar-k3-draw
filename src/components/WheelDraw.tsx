@@ -83,10 +83,13 @@ export function WheelDraw({ spinning, pool, finalNumbers }: Props) {
   }, [spinning, targetNum, items, seg]);
 
   const display = targetNum ?? "•••";
+  const winnerLabel = useText("wheelWinner");
+  const spinningLabel = useText("wheelSpinning");
+  const readyLabel = useText("wheelReady");
 
   // Label font scales with count; always show labels
   const fontSize =
-    items.length > 120 ? 6 : items.length > 60 ? 8 : items.length > 30 ? 10 : 12;
+    items.length > 120 ? 8 : items.length > 60 ? 11 : items.length > 30 ? 14 : 18;
 
   return (
     <div className="relative mx-auto w-full max-w-3xl">
