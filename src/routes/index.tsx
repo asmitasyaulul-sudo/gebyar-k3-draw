@@ -500,12 +500,14 @@ function Index() {
             size="lg"
             onClick={handleDraw}
             disabled={spinning || !pool.length}
-            className="h-14 min-w-44 bg-gradient-to-r from-safety-orange via-safety-yellow to-safety-orange font-display text-lg tracking-widest text-slate-900 shadow-[0_10px_40px_-10px_rgba(255,193,7,0.8)] hover:brightness-110"
+            className="h-14 min-w-44 bg-gradient-to-r from-safety-orange via-safety-yellow to-safety-orange font-display text-base tracking-widest text-slate-900 shadow-[0_10px_40px_-10px_rgba(255,193,7,0.8)] hover:brightness-110"
           >
             <Play className="mr-2 h-5 w-5" />
-            {spinning
-              ? "DRAWING…"
-              : `${latest.length ? "NEXT DRAW" : "START DRAW"} · ${Math.min(settings.winnersPerRound, pool.length || settings.winnersPerRound)}`}
+            <DrawButtonLabel
+              spinning={spinning}
+              hasLatest={latest.length > 0}
+              count={Math.min(settings.winnersPerRound, pool.length || settings.winnersPerRound)}
+            />
           </Button>
 
           <ConfirmBtn
@@ -514,7 +516,8 @@ function Index() {
             onConfirm={handleResetRound}
           >
             <Button size="lg" variant="secondary" disabled={!winners.length || spinning}>
-              <RotateCcw className="mr-2 h-4 w-4" /> Reset Round
+              <RotateCcw className="mr-2 h-4 w-4" />
+              <BText k="resetRound" secondaryClassName="block text-[10px] font-normal opacity-80" />
             </Button>
           </ConfirmBtn>
         </div>
@@ -525,9 +528,12 @@ function Index() {
         <div className="relative z-10 mx-auto mt-8 max-w-[1500px] px-4 pb-12 sm:px-6">
           <div className="mb-3 flex items-center justify-center gap-3">
             <PartyPopper className="h-6 w-6 text-safety-yellow anim-sparkle" />
-            <span className="font-display text-sm tracking-[0.4em] text-safety-yellow">
-              ROUND {currentRound} WINNERS
-            </span>
+            <BText
+              k="roundWinners"
+              vars={{ round: currentRound }}
+              className="text-center font-display text-sm tracking-[0.4em] text-safety-yellow"
+              secondaryClassName="block text-xs font-normal tracking-[0.3em] text-safety-yellow/80"
+            />
             <PartyPopper className="h-6 w-6 text-safety-orange anim-sparkle" />
           </div>
           <WinnerCards winners={latest} mode={settings.displayMode} />
