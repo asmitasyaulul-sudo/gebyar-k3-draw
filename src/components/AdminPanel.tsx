@@ -995,6 +995,130 @@ function MediaTab() {
 }
 
 
+/* --------------------- Texts Tab (bilingual editor) --------------------- */
+
+const TEXT_LABELS: Record<keyof TextsMap, string> = {
+  safetyFirst: "Top tagline (above brand)",
+  brand: "Brand line",
+  gebyar: "Small 'GEBYAR' line",
+  titleMain: "Main title (e.g. BULAN K3)",
+  titleHighlight: "Highlighted title (e.g. NASIONAL)",
+  subtitle: "Subtitle (SAFETY LUCKY DRAW)",
+  statTotal: "Stat — Total Participants",
+  statRemaining: "Stat — Remaining",
+  statWinners: "Stat — Total Winners",
+  statRound: "Stat — Current Round",
+  winnersPerSpin: "Control — Winners / spin",
+  displayLabel: "Control — Display",
+  startDraw: "Button — Start draw",
+  nextDraw: "Button — Next draw",
+  drawing: "Button — Drawing in progress",
+  resetRound: "Button — Reset round",
+  roundWinners: "Heading — Round {round} winners",
+  celebrate: "Popup — Congratulations banner",
+  wheelWinner: "Wheel — WINNER label",
+  wheelSpinning: "Wheel — SPINNING label",
+  wheelReady: "Wheel — READY label",
+};
+
+function TextsTab() {
+  const { settings, setSettings } = useApp();
+  const language: LangMode = (settings.language ?? "id") as LangMode;
+  const texts = settings.texts ?? {};
+
+  const update = (key: keyof TextsMap, lang: "id" | "zh", value: string) => {
+    setSettings({
+      texts: {
+        ...texts,
+        [key]: { ...(texts[key] ?? {}), [lang]: value },
+      },
+    });
+  };
+
+  const resetKey = (key: keyof TextsMap) => {
+    const next = { ...texts };
+    delete next[key];
+    setSettings({ texts: next });
+  };
+
+  const keys = Object.keys(defaultTexts) as (keyof TextsMap)[];
+
+  return (
+    <div className="space-y-4">
+      <div className="rounded-lg border bg-secondary/40 p-3">
+        <Label className="mb-2 block text-xs uppercase tracking-widest text-muted-foreground">
+          Language mode
+        </Label>
+        <div className="flex flex-wrap gap-2">
+          {(
+            [
+              { v: "id", label: "Indonesian only" },
+              { v: "zh", label: "中文 only" },
+              { v: "both", label: "Both (ID + 中文)" },
+            ] as { v: LangMode; label: string }[]
+          ).map((opt) => (
+            <Button
+              key={opt.v}
+              size="sm"
+              variant={language === opt.v ? "default" : "secondary"}
+              onClick={() => setSettings({ language: opt.v })}
+            >
+              {opt.label}
+            </Button>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-muted-foreground">
+          "Both" shows Indonesian on top and Mandarin underneath everywhere.
+        </p>
+      </div>
+
+      <div className="rounded-lg border">
+        <div className="grid grid-cols-[1fr,1fr,auto] gap-2 border-b bg-secondary/60 px-3 py-2 text-[11px] font-display uppercase tracking-widest text-muted-foreground">
+          <div>Indonesian</div>
+          <div>中文 (Mandarin)</div>
+          <div className="text-right">Reset</div>
+        </div>
+        <div className="max-h-[55vh] overflow-auto divide-y">
+          {keys.map((k) => {
+            const def = defaultTexts[k];
+            const cur = texts[k] ?? {};
+            const idVal = cur.id ?? def.id;
+            const zhVal = cur.zh ?? def.zh;
+            return (
+              <div key={k} className="px-3 py-2">
+                <div className="mb-1 text-[11px] font-medium text-muted-foreground">
+                  {TEXT_LABELS[k]}
+                </div>
+                <div className="grid grid-cols-[1fr,1fr,auto] gap-2">
+                  <Input
+                    value={idVal}
+                    onChange={(e) => update(k, "id", e.target.value)}
+                  />
+                  <Input
+                    value={zhVal}
+                    onChange={(e) => update(k, "zh", e.target.value)}
+                  />
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => resetKey(k)}
+                    title="Reset to default"
+                  >
+                    Reset
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <p className="text-xs text-muted-foreground">
+        Use <code>{"{round}"}</code> as a placeholder where it already appears (e.g. round winners heading).
+      </p>
+    </div>
+  );
+}
+
 
 /* --------------------- Export helpers --------------------- */
 
