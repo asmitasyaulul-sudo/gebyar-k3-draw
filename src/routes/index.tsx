@@ -615,9 +615,11 @@ function Index() {
             <div className="flex items-center justify-between gap-2 border-b border-white/10 px-4 py-2">
               <div className="flex items-center gap-2">
                 <PartyPopper className="h-4 w-4 text-safety-yellow anim-sparkle" />
-                <span className="font-display text-[11px] tracking-[0.4em] text-safety-yellow">
-                  🎉 SELAMAT PARA PEMENANG
-                </span>
+                <BText
+                  k="celebrate"
+                  className="font-display text-[11px] tracking-[0.4em] text-safety-yellow"
+                  secondaryClassName="block text-[10px] font-normal tracking-[0.3em] text-safety-yellow/80"
+                />
               </div>
               <div className="flex items-center gap-2">
                 <span className="font-display text-[10px] tracking-[0.3em] text-white/70">
@@ -728,6 +730,35 @@ function TitleLine() {
         </span>
       )}
     </>
+  );
+}
+
+function DrawButtonLabel({
+  spinning,
+  hasLatest,
+  count,
+}: {
+  spinning: boolean;
+  hasLatest: boolean;
+  count: number;
+}) {
+  const drawing = useText("drawing");
+  const start = useText("startDraw");
+  const next = useText("nextDraw");
+  if (spinning) {
+    return (
+      <span className="flex flex-col leading-tight">
+        <span>{drawing.primary}</span>
+        {drawing.secondary && <span className="text-[10px] font-normal opacity-85">{drawing.secondary}</span>}
+      </span>
+    );
+  }
+  const t = hasLatest ? next : start;
+  return (
+    <span className="flex flex-col leading-tight">
+      <span>{t.primary} · {count}</span>
+      {t.secondary && <span className="text-[10px] font-normal opacity-85">{t.secondary}</span>}
+    </span>
   );
 }
 
