@@ -10,6 +10,7 @@ import {
   type Ornaments,
   type Participant,
 } from "@/lib/store";
+import { defaultTexts, type TextsMap, type LangMode } from "@/lib/texts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -66,11 +67,12 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
   return (
     <div className="space-y-4">
       <Tabs defaultValue="participants" className="w-full">
-        <TabsList className="grid w-full grid-cols-6">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="participants">Participants</TabsTrigger>
           <TabsTrigger value="draw">Draw</TabsTrigger>
           <TabsTrigger value="visuals">Visuals</TabsTrigger>
           <TabsTrigger value="media">Media</TabsTrigger>
+          <TabsTrigger value="texts">Texts</TabsTrigger>
           <TabsTrigger value="ornaments">Ornaments</TabsTrigger>
           <TabsTrigger value="account">Account</TabsTrigger>
         </TabsList>
@@ -230,6 +232,10 @@ export function AdminPanel({ onClose }: { onClose: () => void }) {
 
         <TabsContent value="media" className="mt-4">
           <MediaTab />
+        </TabsContent>
+
+        <TabsContent value="texts" className="mt-4">
+          <TextsTab />
         </TabsContent>
 
         <TabsContent value="ornaments" className="mt-4 space-y-2">
