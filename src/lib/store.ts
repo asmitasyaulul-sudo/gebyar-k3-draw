@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import type { LangMode, TextsMap } from "@/lib/texts";
 
 export type Participant = {
   id: string;
@@ -77,6 +78,9 @@ export type Settings = {
   muted: boolean;
   customMusic?: string; // data URL
   customMusicName?: string;
+  // Language & editable copy
+  language: LangMode;
+  texts: Partial<Record<keyof TextsMap, { id?: string; zh?: string }>>;
   // Admin
   adminPasswordHash: string;
 };
@@ -143,6 +147,8 @@ const defaultSettings: Settings = {
   customIcons: [],
   volume: 0.7,
   muted: false,
+  language: "id",
+  texts: {},
   adminPasswordHash: hashPw("admin123"),
 };
 
@@ -223,7 +229,7 @@ export const useApp = create<AppState>()(
     }),
     {
       name: "gebyar-k3-store",
-      version: 2,
+      version: 3,
       migrate: (persistedState: any) => {
         const base =
           typeof persistedState === "object" && persistedState !== null
