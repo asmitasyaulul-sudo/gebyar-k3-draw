@@ -66,6 +66,7 @@ import {
   subscribeMusic,
   isMusicPlaying,
 } from "@/lib/sounds";
+import { BText, useText } from "@/lib/texts";
 import { Music, Pause } from "lucide-react";
 
 export const Route = createFileRoute("/")({
@@ -310,12 +311,16 @@ function Index() {
             </div>
           )}
           <div className="hidden text-white sm:block">
-            <div className="font-display text-[10px] tracking-[0.4em] text-safety-yellow">
-              SAFETY FIRST
-            </div>
-            <div className="font-display text-sm font-bold tracking-wider text-white/90">
-              K3 NATIONAL MONTH 2026
-            </div>
+            <BText
+              k="safetyFirst"
+              className="font-display text-[10px] tracking-[0.4em] text-safety-yellow"
+              secondaryClassName="block text-[9px] tracking-[0.3em] text-safety-yellow/80"
+            />
+            <BText
+              k="brand"
+              className="font-display text-sm font-bold tracking-wider text-white/90"
+              secondaryClassName="block text-[11px] font-normal tracking-wider text-white/70"
+            />
           </div>
         </div>
 
@@ -384,17 +389,22 @@ function Index() {
 
       {/* Hero title */}
       <div className="relative z-10 mx-auto max-w-[1600px] px-4 pt-6 text-center sm:px-6">
-        <div className="font-display text-[10px] tracking-[0.6em] text-safety-yellow drop-shadow sm:text-xs">
-          ━━ GEBYAR ━━
-        </div>
+        <BText
+          k="gebyar"
+          className="font-display text-[10px] tracking-[0.6em] text-safety-yellow drop-shadow sm:text-xs"
+          secondaryClassName="block text-[10px] tracking-[0.4em] text-safety-yellow/80"
+        />
         <h1 className="mt-1 font-display text-3xl font-black leading-tight text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.7)] sm:text-5xl md:text-6xl xl:text-7xl">
-          BULAN K3 <span className="text-gradient-gold">NASIONAL</span>
+          <TitleLine />
         </h1>
-        <div className="mt-2 flex items-center justify-center gap-3">
+        <div className="mt-3 flex items-center justify-center gap-3">
           <span className="hazard-stripes h-1 w-12 rounded sm:w-20" />
-          <h2 className="font-display text-base font-bold tracking-[0.3em] text-white/95 sm:text-xl md:text-2xl">
-            SAFETY LUCKY DRAW
-          </h2>
+          <BText
+            k="subtitle"
+            as="h2"
+            className="font-display text-base font-bold tracking-[0.3em] text-white/95 sm:text-xl md:text-2xl"
+            secondaryClassName="block text-sm font-normal tracking-[0.25em] text-white/75"
+          />
           <span className="hazard-stripes h-1 w-12 rounded sm:w-20" />
         </div>
 
@@ -408,10 +418,10 @@ function Index() {
 
       {/* Stats */}
       <div className="relative z-10 mx-auto mt-5 grid max-w-[1100px] grid-cols-2 gap-3 px-4 sm:grid-cols-4 sm:px-6">
-        <Stat label="Total Participants" value={participants.length} />
-        <Stat label="Remaining" value={pool.length} highlight />
-        <Stat label="Total Winners" value={totalWinners} />
-        <Stat label="Current Round" value={currentRound} />
+        <Stat tkey="statTotal" value={participants.length} />
+        <Stat tkey="statRemaining" value={pool.length} highlight />
+        <Stat tkey="statWinners" value={totalWinners} />
+        <Stat tkey="statRound" value={currentRound} />
       </div>
 
       {/* Machine */}
@@ -431,7 +441,7 @@ function Index() {
         <div className="flex flex-wrap items-center justify-center gap-3 rounded-2xl border border-white/15 bg-black/30 px-4 py-3 backdrop-blur">
           <div className="flex items-center gap-2">
             <Label className="font-display text-[11px] uppercase tracking-[0.25em] text-safety-yellow">
-              Winners / spin
+              <BText k="winnersPerSpin" secondaryClassName="block text-[10px] normal-case tracking-wider text-safety-yellow/70" />
             </Label>
             <div className="flex items-center gap-1">
               {[1, 3, 5, 10, 20].map((n) => (
@@ -466,7 +476,7 @@ function Index() {
 
           <div className="flex items-center gap-2">
             <Label className="font-display text-[11px] uppercase tracking-[0.25em] text-safety-yellow">
-              Display
+              <BText k="displayLabel" secondaryClassName="block text-[10px] normal-case tracking-wider text-safety-yellow/70" />
             </Label>
             <select
               value={settings.displayMode}
