@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Participant } from "@/lib/store";
+import { useText } from "@/lib/texts";
 
 type Props = {
   spinning: boolean;
@@ -82,10 +83,13 @@ export function WheelDraw({ spinning, pool, finalNumbers }: Props) {
   }, [spinning, targetNum, items, seg]);
 
   const display = targetNum ?? "•••";
+  const winnerLabel = useText("wheelWinner");
+  const spinningLabel = useText("wheelSpinning");
+  const readyLabel = useText("wheelReady");
 
   // Label font scales with count; always show labels
   const fontSize =
-    items.length > 120 ? 6 : items.length > 60 ? 8 : items.length > 30 ? 10 : 12;
+    items.length > 120 ? 8 : items.length > 60 ? 11 : items.length > 30 ? 14 : 18;
 
   return (
     <div className="relative mx-auto w-full max-w-3xl">
@@ -134,21 +138,23 @@ export function WheelDraw({ spinning, pool, finalNumbers }: Props) {
               return (
                 <div
                   key={i}
-                  className="absolute left-1/2 top-1/2 origin-left text-white font-display font-black"
+                  className="pointer-events-none absolute left-0 top-0 h-full w-full"
                   style={{
-                    transform: `rotate(${angle}deg) translate(38%, -50%)`,
-                    fontSize,
+                    transform: `rotate(${angle}deg)`,
+                    transformOrigin: "50% 50%",
                   }}
                 >
-                  <span
-                    className="block"
+                  <div
+                    className="absolute left-1/2 -translate-x-1/2 text-center font-display font-black text-white"
                     style={{
-                      transform: "rotate(180deg)",
-                      textShadow: "0 1px 2px rgba(0,0,0,.7)",
+                      top: "6%",
+                      fontSize,
+                      lineHeight: 1,
+                      textShadow: "0 2px 4px rgba(0,0,0,.85), 0 0 2px rgba(0,0,0,.9)",
                     }}
                   >
                     {num}
-                  </span>
+                  </div>
                 </div>
               );
             })}
@@ -162,7 +168,11 @@ export function WheelDraw({ spinning, pool, finalNumbers }: Props) {
         <div className="mt-5 flex items-center justify-center">
           <div className="rounded-xl border border-amber-400/40 bg-black/60 px-6 py-2 text-center">
             <div className="font-display text-[10px] tracking-[0.4em] text-amber-300">
-              {targetNum ? "WINNER" : spinning ? "SPINNING…" : "READY"}
+              {targetNum
+                ? winnerLabel.primary
+                : spinning
+                  ? spinningLabel.primary
+                  : readyLabel.primary}
             </div>
             <div className="font-display text-3xl font-black tracking-wider text-white">
               {display}
@@ -173,3 +183,4 @@ export function WheelDraw({ spinning, pool, finalNumbers }: Props) {
     </div>
   );
 }
+
