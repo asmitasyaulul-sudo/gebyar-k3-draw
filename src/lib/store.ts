@@ -229,34 +229,42 @@ export const useApp = create<AppState>()(
     }),
     {
       name: "gebyar-k3-store",
-      version: 3,
+      version: 4,
       migrate: (persistedState: any) => {
         const base =
           typeof persistedState === "object" && persistedState !== null
             ? persistedState
             : {};
         const persistedSettings = base.settings ?? {};
+        // Drop any legacy data-URL music payload — it now lives in IndexedDB.
+        const { customMusic: _legacyMusic, ...restSettings } = persistedSettings;
+        void _legacyMusic;
         return {
           ...base,
           settings: {
             ...defaultSettings,
-            ...persistedSettings,
+            ...restSettings,
             ornaments: {
               ...defaultSettings.ornaments,
-              ...(persistedSettings.ornaments ?? {}),
+              ...(restSettings.ornaments ?? {}),
             },
-            customIcons: Array.isArray(persistedSettings.customIcons)
-              ? persistedSettings.customIcons
+            customIcons: Array.isArray(restSettings.customIcons)
+              ? restSettings.customIcons
               : [],
           },
         };
       },
-      partialize: (s) => ({
-        participants: s.participants,
-        winners: s.winners,
-        currentRound: s.currentRound,
-        settings: s.settings,
-      }),
+      partialize: (s) => {
+        // Never persist the runtime music URL — it's an object URL backed by IndexedDB.
+        const { customMusic: _runtimeMusic, ...persistedSettings } = s.settings;
+        void _runtimeMusic;
+        return {
+          participants: s.participants,
+          winners: s.winners,
+          currentRound: s.currentRound,
+          settings: persistedSettings,
+        };
+      },
     },
   ),
 );
