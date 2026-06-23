@@ -861,13 +861,15 @@ function MediaTab() {
   const musicRef = useRef<HTMLInputElement>(null);
   const iconRef = useRef<HTMLInputElement>(null);
 
-  const handleMusic = (f: File) => {
-    const r = new FileReader();
-    r.onload = () => {
-      setSettings({ customMusic: r.result as string, customMusicName: f.name });
-      toast.success(`Music set: ${f.name}`);
-    };
-    r.readAsDataURL(f);
+  const handleMusic = async (f: File) => {
+    try {
+      const { saveMusic } = await import("@/lib/musicStore");
+      const { url, name } = await saveMusic(f);
+      setSettings({ customMusic: url, customMusicName: name });
+      toast.success(`Music tersimpan: ${name}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Gagal menyimpan musik.");
+    }
   };
 
   const handleIcon = (files: FileList) => {
@@ -918,9 +920,11 @@ function MediaTab() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() =>
-                  setSettings({ customMusic: undefined, customMusicName: undefined })
-                }
+                onClick={async () => {
+                  const { clearMusic } = await import("@/lib/musicStore");
+                  await clearMusic();
+                  setSettings({ customMusic: undefined, customMusicName: undefined });
+                }}
               >
                 <X className="mr-1 h-3 w-3" /> Remove
               </Button>
