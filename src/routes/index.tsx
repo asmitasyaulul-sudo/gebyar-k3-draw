@@ -60,6 +60,9 @@ import {
   playClick,
   playSiren,
   playSpin,
+  playSpinSfx,
+  stopSpinSfx,
+  playWinnerSfx,
   playCustomMusic,
   pauseCustomMusic,
   setCustomMusicVolume,
@@ -166,23 +169,30 @@ function Index() {
     };
   }, []);
 
-  // Restore music previously stored in IndexedDB (survives reloads / no re-upload needed)
+  // Restore previously stored audio (music + spin/winner SFX) from IndexedDB.
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      if (settings.customMusic) return;
-      const { loadMusic } = await import("@/lib/musicStore");
-      const restored = await loadMusic();
-      if (!cancelled && restored) {
-        useApp.getState().setSettings({
-          customMusic: restored.url,
-          customMusicName: restored.name,
-        });
+      const { loadAudio } = await import("@/lib/musicStore");
+      const cur = useApp.getState().settings;
+      const patch: Partial<typeof cur> = {};
+      if (!cur.customMusic) {
+        const r = await loadAudio("music");
+        if (r) { patch.customMusic = r.url; patch.customMusicName = r.name; }
+      }
+      if (!cur.customSpinSound) {
+        const r = await loadAudio("spin");
+        if (r) { patch.customSpinSound = r.url; patch.customSpinSoundName = r.name; }
+      }
+      if (!cur.customWinnerSound) {
+        const r = await loadAudio("winner");
+        if (r) { patch.customWinnerSound = r.url; patch.customWinnerSoundName = r.name; }
+      }
+      if (!cancelled && Object.keys(patch).length) {
+        useApp.getState().setSettings(patch);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -243,7 +253,11 @@ function Index() {
       // spin phase: tumble the reels
       setReelFinal(["•", "•", "•"]);
       setSpinning(true);
-      playSpin(perSpin, vol);
+      if (settings.customSpinSound) {
+        playSpinSfx(settings.customSpinSound, vol, perSpin);
+      } else {
+        playSpin(perSpin, vol);
+      }
       await sleep(perSpin);
       // land on this winner — stop the reels so digits lock in clearly
       const num = p.number;
@@ -253,12 +267,17 @@ function Index() {
         num.slice(-1) || "•",
       ]);
       setSpinning(false);
+      if (settings.customSpinSound) stopSpinSfx(150);
       revealed.push(p);
       setLatest([...revealed]);
       setPopupWinners([...revealed]);
-      playSiren(vol);
-      playCelebration(vol);
-      playApplause(vol);
+      if (settings.customWinnerSound) {
+        playWinnerSfx(settings.customWinnerSound, vol);
+      } else {
+        playSiren(vol);
+        playCelebration(vol);
+        playApplause(vol);
+      }
       if (settings.ornaments.confetti && !settings.reducedMotion) burstConfetti();
       // hold so the audience clearly sees this winner before the next spin
       await sleep(holdMs);
