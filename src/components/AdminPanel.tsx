@@ -859,17 +859,37 @@ function ChangePassword() {
 function MediaTab() {
   const { settings, setSettings, addCustomIcon, removeCustomIcon, updateCustomIcon } = useApp();
   const musicRef = useRef<HTMLInputElement>(null);
+  const spinRef = useRef<HTMLInputElement>(null);
+  const winnerRef = useRef<HTMLInputElement>(null);
   const iconRef = useRef<HTMLInputElement>(null);
 
-  const handleMusic = async (f: File) => {
+  const handleAudio = async (
+    slot: "music" | "spin" | "winner",
+    f: File,
+  ) => {
     try {
-      const { saveMusic } = await import("@/lib/musicStore");
-      const { url, name } = await saveMusic(f);
-      setSettings({ customMusic: url, customMusicName: name });
-      toast.success(`Music tersimpan: ${name}`);
+      const { saveAudio } = await import("@/lib/musicStore");
+      const { url, name } = await saveAudio(slot, f);
+      if (slot === "music")
+        setSettings({ customMusic: url, customMusicName: name });
+      else if (slot === "spin")
+        setSettings({ customSpinSound: url, customSpinSoundName: name });
+      else setSettings({ customWinnerSound: url, customWinnerSoundName: name });
+      toast.success(`Tersimpan: ${name}`);
     } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Gagal menyimpan musik.");
+      toast.error(err instanceof Error ? err.message : "Gagal menyimpan audio.");
     }
+  };
+
+  const handleClearAudio = async (slot: "music" | "spin" | "winner") => {
+    const { clearAudio } = await import("@/lib/musicStore");
+    await clearAudio(slot);
+    if (slot === "music")
+      setSettings({ customMusic: undefined, customMusicName: undefined });
+    else if (slot === "spin")
+      setSettings({ customSpinSound: undefined, customSpinSoundName: undefined });
+    else
+      setSettings({ customWinnerSound: undefined, customWinnerSoundName: undefined });
   };
 
   const handleIcon = (files: FileList) => {
@@ -892,20 +912,20 @@ function MediaTab() {
 
   return (
     <div className="space-y-6">
-      {/* Music */}
+      {/* Background music */}
       <div className="rounded-lg border p-4">
         <div className="mb-2 flex items-center gap-2 font-display text-sm">
-          <Music className="h-4 w-4" /> Custom draw music
+          <Music className="h-4 w-4" /> Background music
         </div>
         <p className="mb-3 text-xs text-muted-foreground">
-          Upload an MP3/WAV/OGG file. It will replace the built-in spin sound during a draw, and fades out when the winner is revealed.
+          Lagu latar yang otomatis diputar saat halaman dibuka. Tersimpan otomatis — tidak perlu upload ulang.
         </p>
         <input
           ref={musicRef}
           type="file"
           accept="audio/*"
           className="hidden"
-          onChange={(e) => e.target.files?.[0] && handleMusic(e.target.files[0])}
+          onChange={(e) => e.target.files?.[0] && handleAudio("music", e.target.files[0])}
         />
         <div className="flex flex-wrap items-center gap-2">
           <Button onClick={() => musicRef.current?.click()}>
@@ -917,21 +937,80 @@ function MediaTab() {
               <span className="text-xs text-muted-foreground">
                 {settings.customMusicName || "uploaded.mp3"}
               </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={async () => {
-                  const { clearMusic } = await import("@/lib/musicStore");
-                  await clearMusic();
-                  setSettings({ customMusic: undefined, customMusicName: undefined });
-                }}
-              >
+              <Button variant="ghost" size="sm" onClick={() => handleClearAudio("music")}>
                 <X className="mr-1 h-3 w-3" /> Remove
               </Button>
             </>
           )}
         </div>
       </div>
+
+      {/* Spin SFX */}
+      <div className="rounded-lg border p-4">
+        <div className="mb-2 flex items-center gap-2 font-display text-sm">
+          <Music className="h-4 w-4" /> Spin sound effect
+        </div>
+        <p className="mb-3 text-xs text-muted-foreground">
+          Suara saat reel berputar (di-loop selama spin lalu fade out). Kosongkan untuk pakai suara bawaan.
+        </p>
+        <input
+          ref={spinRef}
+          type="file"
+          accept="audio/*"
+          className="hidden"
+          onChange={(e) => e.target.files?.[0] && handleAudio("spin", e.target.files[0])}
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button onClick={() => spinRef.current?.click()}>
+            <Upload className="mr-2 h-4 w-4" /> Upload spin SFX
+          </Button>
+          {settings.customSpinSound && (
+            <>
+              <audio src={settings.customSpinSound} controls className="h-9 max-w-xs" />
+              <span className="text-xs text-muted-foreground">
+                {settings.customSpinSoundName}
+              </span>
+              <Button variant="ghost" size="sm" onClick={() => handleClearAudio("spin")}>
+                <X className="mr-1 h-3 w-3" /> Remove
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Winner SFX */}
+      <div className="rounded-lg border p-4">
+        <div className="mb-2 flex items-center gap-2 font-display text-sm">
+          <Music className="h-4 w-4" /> Winner sound effect
+        </div>
+        <p className="mb-3 text-xs text-muted-foreground">
+          Suara saat pemenang muncul (one-shot tiap pemenang). Kosongkan untuk pakai fanfare bawaan.
+        </p>
+        <input
+          ref={winnerRef}
+          type="file"
+          accept="audio/*"
+          className="hidden"
+          onChange={(e) => e.target.files?.[0] && handleAudio("winner", e.target.files[0])}
+        />
+        <div className="flex flex-wrap items-center gap-2">
+          <Button onClick={() => winnerRef.current?.click()}>
+            <Upload className="mr-2 h-4 w-4" /> Upload winner SFX
+          </Button>
+          {settings.customWinnerSound && (
+            <>
+              <audio src={settings.customWinnerSound} controls className="h-9 max-w-xs" />
+              <span className="text-xs text-muted-foreground">
+                {settings.customWinnerSoundName}
+              </span>
+              <Button variant="ghost" size="sm" onClick={() => handleClearAudio("winner")}>
+                <X className="mr-1 h-3 w-3" /> Remove
+              </Button>
+            </>
+          )}
+        </div>
+      </div>
+
 
       {/* Custom flying icons */}
       <div className="rounded-lg border p-4">

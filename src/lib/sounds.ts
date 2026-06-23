@@ -16,30 +16,84 @@ function gainOf(volume: number) {
 export function playClick(volume = 0.5) {
   if (volume <= 0) return;
   const c = ac();
+  const t0 = c.currentTime;
+  // bright click
   const o = c.createOscillator();
-  const g = gainOf(volume * 0.25);
+  const g = gainOf(volume * 0.3);
   o.type = "square";
-  o.frequency.setValueAtTime(880, c.currentTime);
-  o.frequency.exponentialRampToValueAtTime(220, c.currentTime + 0.08);
-  g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + 0.1);
+  o.frequency.setValueAtTime(1200, t0);
+  o.frequency.exponentialRampToValueAtTime(280, t0 + 0.09);
+  g.gain.setValueAtTime(volume * 0.3, t0);
+  g.gain.exponentialRampToValueAtTime(0.001, t0 + 0.11);
   o.connect(g);
-  o.start();
-  o.stop(c.currentTime + 0.1);
+  o.start(t0);
+  o.stop(t0 + 0.12);
+  // low thump
+  const o2 = c.createOscillator();
+  const g2 = gainOf(volume * 0.4);
+  o2.type = "sine";
+  o2.frequency.setValueAtTime(180, t0);
+  o2.frequency.exponentialRampToValueAtTime(60, t0 + 0.15);
+  g2.gain.setValueAtTime(volume * 0.4, t0);
+  g2.gain.exponentialRampToValueAtTime(0.001, t0 + 0.18);
+  o2.connect(g2);
+  o2.start(t0);
+  o2.stop(t0 + 0.2);
 }
 
 export function playSpin(durationMs: number, volume = 0.5): () => void {
   if (volume <= 0) return () => {};
   const c = ac();
-  const o = c.createOscillator();
-  const g = gainOf(volume * 0.15);
-  o.type = "sawtooth";
-  o.frequency.setValueAtTime(120, c.currentTime);
-  o.frequency.linearRampToValueAtTime(420, c.currentTime + durationMs / 1000);
-  o.connect(g);
-  o.start();
+  const dur = durationMs / 1000;
+  const t0 = c.currentTime;
+
+  // Slot-machine ratchet — square sweep with accelerating tremolo
+  const ratchet = c.createOscillator();
+  const ratchetGain = gainOf(volume * 0.14);
+  ratchet.type = "square";
+  ratchet.frequency.setValueAtTime(80, t0);
+  ratchet.frequency.linearRampToValueAtTime(360, t0 + dur);
+  const trem = c.createOscillator();
+  const tremGain = c.createGain();
+  trem.type = "square";
+  trem.frequency.setValueAtTime(16, t0);
+  trem.frequency.linearRampToValueAtTime(42, t0 + dur);
+  tremGain.gain.value = volume * 0.2;
+  trem.connect(tremGain).connect(ratchetGain.gain);
+  ratchet.connect(ratchetGain);
+  ratchet.start(t0);
+  trem.start(t0);
+
+  // Rising tonal sweep for excitement
+  const tone = c.createOscillator();
+  const toneGain = gainOf(0);
+  tone.type = "sawtooth";
+  tone.frequency.setValueAtTime(220, t0);
+  tone.frequency.exponentialRampToValueAtTime(880, t0 + dur);
+  toneGain.gain.setValueAtTime(0, t0);
+  toneGain.gain.linearRampToValueAtTime(volume * 0.1, t0 + 0.2);
+  toneGain.gain.linearRampToValueAtTime(volume * 0.18, t0 + dur);
+  tone.connect(toneGain);
+  tone.start(t0);
+
+  let stopped = false;
   const stop = () => {
-    g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.2);
-    o.stop(c.currentTime + 0.25);
+    if (stopped) return;
+    stopped = true;
+    const tEnd = c.currentTime;
+    try {
+      ratchetGain.gain.cancelScheduledValues(tEnd);
+      ratchetGain.gain.setValueAtTime(ratchetGain.gain.value, tEnd);
+      ratchetGain.gain.exponentialRampToValueAtTime(0.0001, tEnd + 0.18);
+      toneGain.gain.cancelScheduledValues(tEnd);
+      toneGain.gain.setValueAtTime(toneGain.gain.value || 0.0001, tEnd);
+      toneGain.gain.exponentialRampToValueAtTime(0.0001, tEnd + 0.18);
+      ratchet.stop(tEnd + 0.22);
+      trem.stop(tEnd + 0.22);
+      tone.stop(tEnd + 0.22);
+    } catch {
+      /* ignore */
+    }
   };
   setTimeout(stop, durationMs);
   return stop;
@@ -64,19 +118,25 @@ export function playSiren(volume = 0.5) {
 export function playCelebration(volume = 0.6) {
   if (volume <= 0) return;
   const c = ac();
-  const notes = [523.25, 659.25, 783.99, 1046.5];
+  // Bright ascending C-major arpeggio with sine + triangle layers
+  const notes = [523.25, 659.25, 783.99, 1046.5, 1318.51];
   notes.forEach((freq, i) => {
-    const o = c.createOscillator();
-    const g = gainOf(volume * 0.2);
-    o.type = "triangle";
-    o.frequency.value = freq;
-    const t = c.currentTime + i * 0.12;
-    g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(volume * 0.2, t + 0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.5);
-    o.connect(g);
-    o.start(t);
-    o.stop(t + 0.55);
+    ([
+      { type: "triangle" as OscillatorType, gain: 0.22 },
+      { type: "sine" as OscillatorType, gain: 0.14 },
+    ]).forEach((layer) => {
+      const o = c.createOscillator();
+      const g = gainOf(0);
+      o.type = layer.type;
+      o.frequency.value = freq;
+      const t = c.currentTime + i * 0.1;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(volume * layer.gain, t + 0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + 0.6);
+      o.connect(g);
+      o.start(t);
+      o.stop(t + 0.65);
+    });
   });
 }
 
@@ -208,4 +268,54 @@ export function fadeOutCustomMusic(ms = 600) {
       emitMusic(false);
     }
   }, ms / steps);
+}
+
+/* --------- Custom SFX (spin loop + winner one-shot) --------- */
+let spinSfxEl: HTMLAudioElement | null = null;
+let spinSfxUrl: string | null = null;
+
+export function playSpinSfx(url: string, volume = 0.6, durationMs = 1600) {
+  try {
+    if (!spinSfxEl || spinSfxUrl !== url) {
+      if (spinSfxEl) {
+        try { spinSfxEl.pause(); } catch { /* ignore */ }
+      }
+      spinSfxEl = new Audio(url);
+      spinSfxUrl = url;
+      spinSfxEl.loop = true;
+    }
+    spinSfxEl.volume = Math.max(0, Math.min(1, volume));
+    spinSfxEl.currentTime = 0;
+    void spinSfxEl.play().catch(() => {});
+    // Auto-fade after the spin duration so the SFX matches the reel stop.
+    window.setTimeout(() => stopSpinSfx(220), durationMs);
+  } catch {
+    /* ignore */
+  }
+}
+
+export function stopSpinSfx(fadeMs = 200) {
+  if (!spinSfxEl) return;
+  const el = spinSfxEl;
+  const start = el.volume;
+  const steps = 8;
+  let i = 0;
+  const iv = window.setInterval(() => {
+    i++;
+    el.volume = Math.max(0, start * (1 - i / steps));
+    if (i >= steps) {
+      clearInterval(iv);
+      try { el.pause(); } catch { /* ignore */ }
+    }
+  }, fadeMs / steps);
+}
+
+export function playWinnerSfx(url: string, volume = 0.8) {
+  try {
+    const el = new Audio(url);
+    el.volume = Math.max(0, Math.min(1, volume));
+    void el.play().catch(() => {});
+  } catch {
+    /* ignore */
+  }
 }

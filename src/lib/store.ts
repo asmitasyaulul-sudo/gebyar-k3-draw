@@ -76,8 +76,12 @@ export type Settings = {
   // Sound
   volume: number;
   muted: boolean;
-  customMusic?: string; // data URL
+  customMusic?: string; // object URL (runtime only)
   customMusicName?: string;
+  customSpinSound?: string; // object URL (runtime only)
+  customSpinSoundName?: string;
+  customWinnerSound?: string; // object URL (runtime only)
+  customWinnerSoundName?: string;
   // Language & editable copy
   language: LangMode;
   texts: Partial<Record<keyof TextsMap, { id?: string; zh?: string }>>;
@@ -236,9 +240,14 @@ export const useApp = create<AppState>()(
             ? persistedState
             : {};
         const persistedSettings = base.settings ?? {};
-        // Drop any legacy data-URL music payload — it now lives in IndexedDB.
-        const { customMusic: _legacyMusic, ...restSettings } = persistedSettings;
-        void _legacyMusic;
+        // Drop any legacy data-URL audio payloads — they now live in IndexedDB.
+        const {
+          customMusic: _legacyMusic,
+          customSpinSound: _legacySpin,
+          customWinnerSound: _legacyWinner,
+          ...restSettings
+        } = persistedSettings;
+        void _legacyMusic; void _legacySpin; void _legacyWinner;
         return {
           ...base,
           settings: {
@@ -255,9 +264,14 @@ export const useApp = create<AppState>()(
         };
       },
       partialize: (s) => {
-        // Never persist the runtime music URL — it's an object URL backed by IndexedDB.
-        const { customMusic: _runtimeMusic, ...persistedSettings } = s.settings;
-        void _runtimeMusic;
+        // Never persist runtime object URLs — they're backed by IndexedDB.
+        const {
+          customMusic: _m,
+          customSpinSound: _s,
+          customWinnerSound: _w,
+          ...persistedSettings
+        } = s.settings;
+        void _m; void _s; void _w;
         return {
           participants: s.participants,
           winners: s.winners,
