@@ -269,3 +269,53 @@ export function fadeOutCustomMusic(ms = 600) {
     }
   }, ms / steps);
 }
+
+/* --------- Custom SFX (spin loop + winner one-shot) --------- */
+let spinSfxEl: HTMLAudioElement | null = null;
+let spinSfxUrl: string | null = null;
+
+export function playSpinSfx(url: string, volume = 0.6, durationMs = 1600) {
+  try {
+    if (!spinSfxEl || spinSfxUrl !== url) {
+      if (spinSfxEl) {
+        try { spinSfxEl.pause(); } catch { /* ignore */ }
+      }
+      spinSfxEl = new Audio(url);
+      spinSfxUrl = url;
+      spinSfxEl.loop = true;
+    }
+    spinSfxEl.volume = Math.max(0, Math.min(1, volume));
+    spinSfxEl.currentTime = 0;
+    void spinSfxEl.play().catch(() => {});
+    // Auto-fade after the spin duration so the SFX matches the reel stop.
+    window.setTimeout(() => stopSpinSfx(220), durationMs);
+  } catch {
+    /* ignore */
+  }
+}
+
+export function stopSpinSfx(fadeMs = 200) {
+  if (!spinSfxEl) return;
+  const el = spinSfxEl;
+  const start = el.volume;
+  const steps = 8;
+  let i = 0;
+  const iv = window.setInterval(() => {
+    i++;
+    el.volume = Math.max(0, start * (1 - i / steps));
+    if (i >= steps) {
+      clearInterval(iv);
+      try { el.pause(); } catch { /* ignore */ }
+    }
+  }, fadeMs / steps);
+}
+
+export function playWinnerSfx(url: string, volume = 0.8) {
+  try {
+    const el = new Audio(url);
+    el.volume = Math.max(0, Math.min(1, volume));
+    void el.play().catch(() => {});
+  } catch {
+    /* ignore */
+  }
+}
