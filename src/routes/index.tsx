@@ -165,6 +165,27 @@ function Index() {
       unsub();
     };
   }, []);
+
+  // Restore music previously stored in IndexedDB (survives reloads / no re-upload needed)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (settings.customMusic) return;
+      const { loadMusic } = await import("@/lib/musicStore");
+      const restored = await loadMusic();
+      if (!cancelled && restored) {
+        useApp.getState().setSettings({
+          customMusic: restored.url,
+          customMusicName: restored.name,
+        });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   useEffect(() => {
     setCustomMusicVolume(settings.muted ? 0 : settings.volume);
   }, [settings.muted, settings.volume]);
