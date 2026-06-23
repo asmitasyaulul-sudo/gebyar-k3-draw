@@ -76,8 +76,12 @@ export type Settings = {
   // Sound
   volume: number;
   muted: boolean;
-  customMusic?: string; // data URL
+  customMusic?: string; // object URL (runtime only)
   customMusicName?: string;
+  customSpinSound?: string; // object URL (runtime only)
+  customSpinSoundName?: string;
+  customWinnerSound?: string; // object URL (runtime only)
+  customWinnerSoundName?: string;
   // Language & editable copy
   language: LangMode;
   texts: Partial<Record<keyof TextsMap, { id?: string; zh?: string }>>;
@@ -236,9 +240,14 @@ export const useApp = create<AppState>()(
             ? persistedState
             : {};
         const persistedSettings = base.settings ?? {};
-        // Drop any legacy data-URL music payload — it now lives in IndexedDB.
-        const { customMusic: _legacyMusic, ...restSettings } = persistedSettings;
-        void _legacyMusic;
+        // Drop any legacy data-URL audio payloads — they now live in IndexedDB.
+        const {
+          customMusic: _legacyMusic,
+          customSpinSound: _legacySpin,
+          customWinnerSound: _legacyWinner,
+          ...restSettings
+        } = persistedSettings;
+        void _legacyMusic; void _legacySpin; void _legacyWinner;
         return {
           ...base,
           settings: {
