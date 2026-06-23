@@ -920,9 +920,11 @@ function MediaTab() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() =>
-                  setSettings({ customMusic: undefined, customMusicName: undefined })
-                }
+                onClick={async () => {
+                  const { clearMusic } = await import("@/lib/musicStore");
+                  await clearMusic();
+                  setSettings({ customMusic: undefined, customMusicName: undefined });
+                }}
               >
                 <X className="mr-1 h-3 w-3" /> Remove
               </Button>
