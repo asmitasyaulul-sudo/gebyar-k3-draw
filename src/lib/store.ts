@@ -264,9 +264,14 @@ export const useApp = create<AppState>()(
         };
       },
       partialize: (s) => {
-        // Never persist the runtime music URL — it's an object URL backed by IndexedDB.
-        const { customMusic: _runtimeMusic, ...persistedSettings } = s.settings;
-        void _runtimeMusic;
+        // Never persist runtime object URLs — they're backed by IndexedDB.
+        const {
+          customMusic: _m,
+          customSpinSound: _s,
+          customWinnerSound: _w,
+          ...persistedSettings
+        } = s.settings;
+        void _m; void _s; void _w;
         return {
           participants: s.participants,
           winners: s.winners,
