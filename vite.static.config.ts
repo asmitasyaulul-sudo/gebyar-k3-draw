@@ -9,6 +9,8 @@ import path from "node:path";
 // to `dist-static/`. The Lovable preview and Publish flow continue to use the
 // default TanStack Start build via vite.config.ts.
 export default defineConfig({
+  root: path.resolve(__dirname, "static"),
+  publicDir: path.resolve(__dirname, "public"),
   plugins: [react(), tailwindcss(), tsconfigPaths()],
   resolve: {
     alias: {
@@ -16,7 +18,7 @@ export default defineConfig({
     },
   },
   build: {
-    outDir: "dist-static",
+    outDir: path.resolve(__dirname, "dist-static"),
     emptyOutDir: true,
     sourcemap: false,
   },
