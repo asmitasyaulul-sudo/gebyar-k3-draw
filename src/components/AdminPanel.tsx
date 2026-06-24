@@ -928,19 +928,23 @@ function MediaTab() {
           onChange={(e) => e.target.files?.[0] && handleAudio("music", e.target.files[0])}
         />
         <div className="flex flex-wrap items-center gap-2">
-          <Button onClick={() => musicRef.current?.click()}>
-            <Upload className="mr-2 h-4 w-4" /> Upload music
-          </Button>
-          {settings.customMusic && (
+          {settings.customMusic ? (
             <>
               <audio src={settings.customMusic} controls className="h-9 max-w-xs" />
               <span className="text-xs text-muted-foreground">
                 {settings.customMusicName || "uploaded.mp3"}
               </span>
+              <Button variant="ghost" size="sm" onClick={() => musicRef.current?.click()}>
+                <Upload className="mr-1 h-3 w-3" /> Replace
+              </Button>
               <Button variant="ghost" size="sm" onClick={() => handleClearAudio("music")}>
                 <X className="mr-1 h-3 w-3" /> Remove
               </Button>
             </>
+          ) : (
+            <Button onClick={() => musicRef.current?.click()}>
+              <Upload className="mr-2 h-4 w-4" /> Upload music
+            </Button>
           )}
         </div>
       </div>
