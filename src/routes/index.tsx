@@ -99,7 +99,7 @@ const LOGO_SIZE_MAP = {
   xl: "h-28",
 } as const;
 
-function Index() {
+export function Index() {
   const {
     settings,
     setSettings,
