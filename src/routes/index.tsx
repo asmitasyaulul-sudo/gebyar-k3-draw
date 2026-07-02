@@ -244,51 +244,45 @@ export function Index() {
     playClick(vol);
 
     const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
-    const perSpin = 1600;
-    const holdMs = 1800; // brief pause on each winner so the machine clearly shows the number
-    const revealed: Participant[] = [];
-
-    for (let i = 0; i < picks.length; i++) {
-      const p = picks[i];
-      // spin phase: tumble the reels
-      setReelFinal(["•", "•", "•"]);
-      setSpinning(true);
-      if (settings.customSpinSound) {
-        playSpinSfx(settings.customSpinSound, vol, perSpin);
-      } else {
-        playSpin(perSpin, vol);
-      }
-      await sleep(perSpin);
-      // land on this winner — stop the reels so digits lock in clearly
-      const num = p.number;
-      setReelFinal([
-        num.slice(-3, -2) || "•",
-        num.slice(-2, -1) || "•",
-        num.slice(-1) || "•",
-      ]);
-      setSpinning(false);
-      if (settings.customSpinSound) stopSpinSfx(150);
-      revealed.push(p);
-      setLatest([...revealed]);
-      setPopupWinners([...revealed]);
-      if (settings.customWinnerSound) {
-        playWinnerSfx(settings.customWinnerSound, vol);
-      } else {
-        playSiren(vol);
-        playCelebration(vol);
-        playApplause(vol);
-      }
-      if (settings.ornaments.confetti && !settings.reducedMotion) burstConfetti();
-      // hold so the audience clearly sees this winner before the next spin
-      await sleep(holdMs);
+    // Single suspenseful spin, then reveal ALL winners at once.
+    const spinMs = 2600;
+    setReelFinal(["•", "•", "•"]);
+    setSpinning(true);
+    if (settings.customSpinSound) {
+      playSpinSfx(settings.customSpinSound, vol, spinMs);
+    } else {
+      playSpin(spinMs, vol);
     }
+    await sleep(spinMs);
+
+    // Lock reels on the last winner's number as a visual anchor
+    const last = picks[picks.length - 1];
+    const num = last.number;
+    setReelFinal([
+      num.slice(-3, -2) || "•",
+      num.slice(-2, -1) || "•",
+      num.slice(-1) || "•",
+    ]);
+    setSpinning(false);
+    if (settings.customSpinSound) stopSpinSfx(150);
+
+    // Reveal every winner simultaneously
+    setLatest(picks);
+    setPopupWinners(picks);
+    if (settings.customWinnerSound) {
+      playWinnerSfx(settings.customWinnerSound, vol);
+    } else {
+      playSiren(vol);
+      playCelebration(vol);
+      playApplause(vol);
+    }
+    if (settings.ornaments.confetti && !settings.reducedMotion) burstConfetti();
 
     pushWinnerEntry({
       round: (winners[winners.length - 1]?.round ?? 0) + 1,
       participants: picks,
       timestamp: Date.now(),
     });
-    setSpinning(false);
   };
 
   const handleResetRound = () => {
