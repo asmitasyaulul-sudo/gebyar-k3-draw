@@ -1,10 +1,28 @@
-// IndexedDB-backed persistent audio storage.
-// Avoids localStorage quota issues that plague data-URL persistence,
-// so uploaded audio (background music + spin/winner SFX) survives reloads.
+// Shared audio storage backed by Lovable Cloud (Supabase Storage) so uploaded
+// music + SFX become the default for EVERY visitor on any device.
+// IndexedDB is kept as a local cache so playback is instant on repeat loads.
+import { supabase } from "@/integrations/supabase/client";
 
 const DB_NAME = "gebyar-k3-music";
 const STORE = "music";
 const MAX_BYTES = 100 * 1024 * 1024; // 100 MB hard cap
+const BUCKET = "audio";
+const NAME_META_KEY = "gebyar-k3-audio-names";
+
+type SlotNames = Partial<Record<AudioSlot, string>>;
+
+function readNames(): SlotNames {
+  try { return JSON.parse(localStorage.getItem(NAME_META_KEY) || "{}"); } catch { return {}; }
+}
+function writeName(slot: AudioSlot, name: string) {
+  const n = readNames(); n[slot] = name;
+  try { localStorage.setItem(NAME_META_KEY, JSON.stringify(n)); } catch { /* ignore */ }
+}
+function clearName(slot: AudioSlot) {
+  const n = readNames(); delete n[slot];
+  try { localStorage.setItem(NAME_META_KEY, JSON.stringify(n)); } catch { /* ignore */ }
+}
+
 
 export type AudioSlot = "music" | "spin" | "winner";
 
